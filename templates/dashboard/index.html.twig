@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-speedometer2"></i> Tableau de bord
+            </h1>
+            
+            {# Role-specific welcome message #}
+            {% if is_granted('ROLE_ADMIN') %}
+            <div class="alert alert-primary border-primary">
+                <h5><i class="bi bi-shield-check"></i> Bienvenue, Administrateur !</h5>
+                <p class="mb-0">
+                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
+                    <span class="badge bg-primary">{{ app.user.role.name }}</span><br>
+                    <small class="text-muted">Vous avez un accès complet à toutes les fonctionnalités du système.</small>
+                </p>
+            </div>
+            {% elseif is_granted('ROLE_COMMERCIAL') %}
+            <div class="alert alert-success border-success">
+                <h5><i class="bi bi-briefcase"></i> Bienvenue, Commercial !</h5>
+                <p class="mb-0">
+                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
+                    <span class="badge bg-success">{{ app.user.role.name }}</span><br>
+                    <small class="text-muted">Vous pouvez gérer les clients, articles et tout le flux commercial.</small>
+                </p>
+            </div>
+            {% elseif is_granted('ROLE_COMPTABLE') %}
+            <div class="alert alert-info border-info">
+                <h5><i class="bi bi-calculator"></i> Bienvenue, Comptable !</h5>
+                <p class="mb-0">
+                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
+                    <span class="badge bg-info">{{ app.user.role.name }}</span><br>
+                    <small class="text-muted">Vous avez un accès en lecture seule aux données commerciales et au journal d'audit.</small>
+                </p>
+            </div>
+            {% else %}
+            <div class="alert alert-secondary">
+                <p class="mb-0">
+                    Bienvenue, <strong>{{ app.user.name }}</strong> !<br>
+                    <small>Rôle : <span class="badge bg-secondary">{{ app.user.role.name }}</span></small>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {# Quick Stats Cards #}
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Commandes</h6>
+                            <h2 class="mb-0">0</h2>
+                        </div>
+                        <i class="bi bi-cart3 fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-white bg-opacity-25">
+                    <small>En attente de livraison</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Livraisons</h6>
+                            <h2 class="mb-0">0</h2>
+                        </div>
+                        <i class="bi bi-truck fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-white bg-opacity-25">
+                    <small>Non facturées</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Factures</h6>
+                            <h2 class="mb-0">0</h2>
+                        </div>
+                        <i class="bi bi-receipt fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-white bg-opacity-25">
+                    <small>Non payées</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50 mb-1">Clients</h6>
+                            <h2 class="mb-0">0</h2>
+                        </div>
+                        <i class="bi bi-people fs-1 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer bg-white bg-opacity-25">
+                    <small>Clients actifs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Activités récentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Aucune activité récente
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Actions rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <div class="alert alert-warning alert-sm mb-3">
+                        <small><i class="bi bi-info-circle"></i> Mode Administrateur - Accès complet</small>
+                    </div>
+                    {% elseif is_granted('ROLE_COMPTABLE') %}
+                    <div class="alert alert-info alert-sm mb-3">
+                        <small><i class="bi bi-eye"></i> Mode Lecture seule</small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COMMERCIAL') %}
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle"></i> Nouveau bon de commande
+                        </a>
+                        <a href="#" class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle"></i> Nouveau bon de livraison
+                        </a>
+                        <a href="#" class="btn btn-outline-warning">
+                            <i class="bi bi-plus-circle"></i> Nouvelle facture
+                        </a>
+                        <a href="#" class="btn btn-outline-info">
+                            <i class="bi bi-plus-circle"></i> Nouveau client
+                        </a>
+                        {% else %}
+                        <div class="text-muted text-center py-3">
+                            <i class="bi bi-lock fs-3 d-block mb-2"></i>
+                            <small>Vous n'avez pas les permissions pour créer de nouveaux éléments.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# Role permissions summary #}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key"></i> Vos privilèges
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if app.user.role.privileges|length > 0 %}
+                            {% for privilege in app.user.role.privileges %}
+                                <div class="col-md-4 mb-2">
+                                    <small>
+                                        <i class="bi bi-check-circle-fill text-success"></i> 
+                                        {{ privilege.description }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <p class="text-muted mb-0">Aucun privilège assigné</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+</style>
+{% endblock %}
