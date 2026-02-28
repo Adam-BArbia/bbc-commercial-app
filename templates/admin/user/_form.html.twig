@@ -1,0 +1,7 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('admin_user_index') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+{{ form_end(form) }}

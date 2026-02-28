@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le client{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-pencil"></i> Modifier : {{ client.name }}</h4>
+                </div>
+                <div class="card-body">
+                    {{ include('client/_form.html.twig', {'button_label': 'Enregistrer les modifications'}) }}
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ path('app_client_index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
