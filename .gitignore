@@ -21,15 +21,5 @@ Thumbs.db
 # Cache
 /.cache/
 
-#text & todo
-*.txt
-*.todo
-*.md
-PROGRESS.md
-QUICK_TEST_REFERENCE.md
-SESSION_HANDOFF.md
-SETUP_INSTRUCTIONS.md
-MANUAL_TEST_CHECKLIST.md
-
 # Agentic folder - local untracked files
 /agentic/
