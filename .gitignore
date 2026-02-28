@@ -24,3 +24,9 @@ Thumbs.db
 #text & todo
 *.txt
 *.todo
+*.md
+PROGRESS.md
+QUICK_TEST_REFERENCE.md
+SESSION_HANDOFF.md
+SETUP_INSTRUCTIONS.md
+MANUAL_TEST_CHECKLIST.md
