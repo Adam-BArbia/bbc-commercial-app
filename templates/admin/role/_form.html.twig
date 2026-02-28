@@ -1,0 +1,19 @@
+{{ form_start(form) }}
+    {{ form_row(form.name) }}
+    <div class="mb-2">{{ form_label(form.privileges) }}</div>
+    <div class="row g-2">
+        {% for privilegeField in form.privileges %}
+            <div class="col-md-6">
+                <div class="form-check border rounded p-2">
+                    {{ form_widget(privilegeField) }}
+                    {{ form_label(privilegeField) }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('admin_role_index') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+{{ form_end(form) }}

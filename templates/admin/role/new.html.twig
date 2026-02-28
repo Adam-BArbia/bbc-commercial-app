@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau rôle{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="h3 mb-3"><i class="bi bi-plus-square"></i> Créer un rôle</h1>
+    <div class="card">
+        <div class="card-body">
+            {% include 'admin/role/_form.html.twig' with {form: form, button_label: 'Créer'} %}
+        </div>
+    </div>
+</div>
+{% endblock %}

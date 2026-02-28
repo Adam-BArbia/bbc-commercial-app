@@ -187,7 +187,7 @@
             <div class="card">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="bi bi-key"></i> Vos privilèges
+                        <i class="bi bi-key"></i> Vos privilèges ({{ user_privileges()|length }})
                     </h5>
                 </div>
                 <div class="card-body">
@@ -197,7 +197,8 @@
                                 <div class="col-md-4 mb-2">
                                     <small>
                                         <i class="bi bi-check-circle-fill text-success"></i> 
-                                        {{ privilege.description }}
+                                        <strong>{{ privilege.code }}</strong><br>
+                                        <span class="text-muted ms-4">{{ privilege.description }}</span>
                                     </small>
                                 </div>
                             {% endfor %}
@@ -212,11 +213,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    body {
-        background-color: #f8f9fa;
-        min-height: 100vh;
-    }
-</style>
 {% endblock %}

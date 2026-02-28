@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - Rôles{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0"><i class="bi bi-shield-lock"></i> Rôles et privilèges</h1>
+        <a href="{{ path('admin_role_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nouveau rôle
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rôle</th>
+                        <th>Privilèges</th>
+                        <th>Utilisateurs assignés</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                        <tr>
+                            <td><span class="badge bg-dark">{{ role.name }}</span></td>
+                            <td>{{ role.privileges|length }}</td>
+                            <td>{{ role.users|length }}</td>
+                            <td class="text-end">
+                                <a href="{{ path('admin_role_edit', {id: role.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                <form method="post" action="{{ path('admin_role_delete', {id: role.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce rôle ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-role-' ~ role.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Aucun rôle trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

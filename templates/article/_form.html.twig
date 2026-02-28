@@ -1,0 +1,19 @@
+{{ form_start(form) }}
+    <div class="mb-3">
+        {{ form_row(form.code) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_row(form.designation) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_row(form.active) }}
+    </div>
+
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-circle"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}
