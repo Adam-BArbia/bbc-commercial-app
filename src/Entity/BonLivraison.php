@@ -31,7 +31,7 @@ class BonLivraison
     private ?BonCommande $bon_commande = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'id', nullable: false)]
     private ?User $created_by = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

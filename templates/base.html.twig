@@ -109,10 +109,10 @@
                             </a>
                             <ul class="dropdown-menu">
                                 {% if has_privilege('ORDER_VIEW') %}
-                                <li><a class="dropdown-item" href="#">Bons de commande</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_bon_commande_index') }}">Bons de commande</a></li>
                                 {% endif %}
                                 {% if has_privilege('DELIVERY_VIEW') %}
-                                <li><a class="dropdown-item" href="#">Bons de livraison</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_bon_livraison_index') }}">Bons de livraison</a></li>
                                 {% endif %}
                                 {% if has_privilege('INVOICE_VIEW') %}
                                 <li><a class="dropdown-item" href="#">Factures</a></li>

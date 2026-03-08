@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau bon de commande{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4"><i class="bi bi-plus-circle"></i> Nouveau bon de commande</h1>
+
+    {% include 'bon_commande/_form.html.twig' with {
+        form: form,
+        button_label: 'Creer le bon de commande'
+    } %}
+</div>
+{% endblock %}

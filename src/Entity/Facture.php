@@ -43,7 +43,7 @@ class Facture
     private ?string $total_ttc = '0.000';
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'id', nullable: false)]
     private ?User $created_by = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

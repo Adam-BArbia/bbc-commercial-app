@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un bon de livraison - BBC Commercial{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-plus-circle"></i> Créer un bon de livraison
+            </h1>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" id="delivery-form" class="needs-validation" novalidate>
+                        <!-- Bon de Commande Selection -->
+                        <div class="mb-3">
+                            <label for="{{ form.bon_commande.vars.id }}" class="form-label">
+                                Bon de commande <span class="text-danger">*</span>
+                            </label>
+                            {{ form_widget(form.bon_commande, {'attr': {'class': 'form-select', 'id': 'bon-commande-select'}}) }}
+                            {{ form_errors(form.bon_commande) }}
+                        </div>
+
+                        <!-- Order Items Preview (Hidden initially) -->
+                        <div id="order-items-container" style="display: none;" class="mb-4">
+                            <h5>Articles de la commande</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Article</th>
+                                            <th>Commandé</th>
+                                            <th>Livré</th>
+                                            <th>Restant</th>
+                                            <th>À livrer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="order-items-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Créer le bon de livraison
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3">
+                        <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.getElementById('bon-commande-select');
+    const containerElement = document.getElementById('order-items-container');
+    const tableBodyElement = document.getElementById('order-items-body');
+
+    selectElement.addEventListener('change', function() {
+        if (!this.value) {
+            containerElement.style.display = 'none';
+            tableBodyElement.innerHTML = '';
+            return;
+        }
+
+        // Fetch order items via AJAX
+        fetch(`/api/bon-commande/${this.value}/items`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                tableBodyElement.innerHTML = '';
+                
+                if (data.items && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.article_name}</td>
+                            <td class="text-center">${parseFloat(item.quantity).toFixed(2)}</td>
+                            <td class="text-center">${parseFloat(item.delivered_quantity).toFixed(2)}</td>
+                            <td class="text-center">${parseFloat(item.remaining_quantity).toFixed(2)}</td>
+                            <td>
+                                <input type="number" name="delivery_items[${item.id}]" 
+                                    class="form-control form-control-sm delivery-qty" 
+                                    placeholder="0.00" 
+                                    step="0.01" 
+                                    min="0" 
+                                    max="${item.remaining_quantity}"
+                                    value="0">
+                            </td>
+                        `;
+                        tableBodyElement.appendChild(row);
+                    });
+                    containerElement.style.display = 'block';
+                } else {
+                    tableBodyElement.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucun article à livrer</td></tr>';
+                    containerElement.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                tableBodyElement.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Erreur lors du chargement des articles</td></tr>';
+                containerElement.style.display = 'block';
+            });
+    });
+});
+</script>
+{% endblock %}

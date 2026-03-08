@@ -23,3 +23,6 @@ Thumbs.db
 
 # Agentic folder - local untracked files
 /agentic/
+
+#symfony CLI
+symfony.exe

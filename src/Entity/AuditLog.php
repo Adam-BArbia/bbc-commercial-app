@@ -34,7 +34,7 @@ class AuditLog
     private ?array $new_data = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'performed_by', referencedColumnName: 'id', nullable: false)]
     private ?User $performed_by = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

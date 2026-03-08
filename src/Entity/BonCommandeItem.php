@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BonCommandeItemRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -32,6 +34,17 @@ class BonCommandeItem
     #[Assert\NotBlank]
     #[Assert\PositiveOrZero]
     private ?string $unit_price_snapshot = null;
+
+    /**
+     * @var Collection<int, BonLivraisonItem>
+     */
+    #[ORM\OneToMany(targetEntity: BonLivraisonItem::class, mappedBy: 'bon_commande_item')]
+    private Collection $bonLivraisonItems;
+
+    public function __construct()
+    {
+        $this->bonLivraisonItems = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -88,5 +101,54 @@ class BonCommandeItem
     public function getLineTotal(): string
     {
         return (string) ((float) $this->quantity * (float) $this->unit_price_snapshot);
+    }
+
+    /**
+     * Get the sum of delivered quantities
+     */
+    public function getDeliveredQuantity(): string
+    {
+        $total = 0;
+        foreach ($this->bonLivraisonItems as $item) {
+            $total += (float) $item->getQuantityDelivered();
+        }
+        return (string) $total;
+    }
+
+    /**
+     * Calculate remaining quantity to be delivered
+     */
+    public function getRemainingQuantity(): string
+    {
+        $ordered = (float) $this->quantity;
+        $delivered = (float) $this->getDeliveredQuantity();
+        return (string) ($ordered - $delivered);
+    }
+
+    /**
+     * @return Collection<int, BonLivraisonItem>
+     */
+    public function getBonLivraisonItems(): Collection
+    {
+        return $this->bonLivraisonItems;
+    }
+
+    public function addBonLivraisonItem(BonLivraisonItem $bonLivraisonItem): static
+    {
+        if (!$this->bonLivraisonItems->contains($bonLivraisonItem)) {
+            $this->bonLivraisonItems->add($bonLivraisonItem);
+            $bonLivraisonItem->setBonCommandeItem($this);
+        }
+        return $this;
+    }
+
+    public function removeBonLivraisonItem(BonLivraisonItem $bonLivraisonItem): static
+    {
+        if ($this->bonLivraisonItems->removeElement($bonLivraisonItem)) {
+            if ($bonLivraisonItem->getBonCommandeItem() === $this) {
+                $bonLivraisonItem->setBonCommandeItem(null);
+            }
+        }
+        return $this;
     }
 }

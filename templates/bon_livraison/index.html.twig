@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bons de livraison - BBC Commercial{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3">
+                <i class="fas fa-truck"></i> Bons de livraison
+            </h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ path('app_bon_livraison_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau bon de livraison
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" 
+                        placeholder="Rechercher par référence, commande ou client..."
+                        value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">--- Tous les statuts ---</option>
+                        <option value="DRAFT" {% if status_filter == 'DRAFT' %}selected{% endif %}>Brouillon</option>
+                        <option value="VALIDATED" {% if status_filter == 'VALIDATED' %}selected{% endif %}>Validé</option>
+                        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Annulé</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delivery Notes Table -->
+    {% if delivery_notes|length > 0 %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Référence</th>
+                    <th>Commande</th>
+                    <th>Client</th>
+                    <th>Statut</th>
+                    <th>Date de création</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for delivery in delivery_notes %}
+                <tr>
+                    <td><strong>{{ delivery.reference }}</strong></td>
+                    <td>{{ delivery.bonCommande.reference }}</td>
+                    <td>{{ delivery.bonCommande.client.name }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if delivery.status == 'DRAFT' %}bg-warning
+                            {% elseif delivery.status == 'VALIDATED' %}bg-success
+                            {% elseif delivery.status == 'CANCELLED' %}bg-danger{% endif %}">
+                            {{ delivery.status == 'DRAFT' ? 'Brouillon' : 
+                               delivery.status == 'VALIDATED' ? 'Validé' : 
+                               delivery.status == 'CANCELLED' ? 'Annulé' : delivery.status }}
+                        </span>
+                    </td>
+                    <td>{{ delivery.createdAt|date('d/m/Y H:i') }}</td>
+                    <td class="text-end">
+                        <a href="{{ path('app_bon_livraison_show', {'id': delivery.id}) }}" 
+                            class="btn btn-sm btn-info" title="Voir">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if delivery.canBeEdited() %}
+                        <a href="{{ path('app_bon_livraison_edit', {'id': delivery.id}) }}" 
+                            class="btn btn-sm btn-warning" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle"></i> Aucun bon de livraison trouvé.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -19,7 +19,7 @@ class BonLivraisonItem
     #[ORM\JoinColumn(nullable: false)]
     private ?BonLivraison $bon_livraison = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'bonLivraisonItems')]
     #[ORM\JoinColumn(nullable: false)]
     private ?BonCommandeItem $bon_commande_item = null;
 

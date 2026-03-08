@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ order.reference }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4"><i class="bi bi-pencil-square"></i> Modifier {{ order.reference }}</h1>
+
+    {% include 'bon_commande/_form.html.twig' with {
+        form: form,
+        button_label: 'Enregistrer les modifications'
+    } %}
+</div>
+{% endblock %}

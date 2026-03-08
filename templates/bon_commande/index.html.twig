@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bons de commande{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-file-earmark-text"></i> Bons de commande</h1>
+        {% if has_privilege('ORDER_CREATE') %}
+            <a href="{{ path('app_bon_commande_new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nouveau bon de commande
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label for="search" class="form-label">Rechercher</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="search"
+                        name="search"
+                        value="{{ search }}"
+                        placeholder="Reference, client, code client..."
+                    >
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Tous</option>
+                        {% for code, label in statusChoices %}
+                            <option value="{{ code }}" {% if statusFilter == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Liste ({{ orders|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if orders|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reference</th>
+                                <th>Client</th>
+                                <th>Date creation</th>
+                                <th class="text-center">Lignes</th>
+                                <th class="text-center">Statut</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td><strong>{{ order.reference }}</strong></td>
+                                    <td>
+                                        {{ order.client.name }}
+                                        <br>
+                                        <small class="text-muted">{{ order.client.clientCode }}</small>
+                                    </td>
+                                    <td>{{ order.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td class="text-center">{{ order.bonCommandeItems|length }}</td>
+                                    <td class="text-center">
+                                        {% if order.status == 'CANCELLED' %}
+                                            <span class="badge bg-danger">Annulee</span>
+                                        {% elseif order.status == 'DELIVERED' %}
+                                            <span class="badge bg-success">Livree</span>
+                                        {% elseif order.status == 'PARTIALLY_DELIVERED' %}
+                                            <span class="badge bg-warning text-dark">Partiellement livree</span>
+                                        {% elseif order.status == 'CONFIRMED' %}
+                                            <span class="badge bg-primary">Confirmee</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Brouillon</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ path('app_bon_commande_show', {'id': order.id}) }}" class="btn btn-outline-secondary" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if has_privilege('ORDER_EDIT') and order.canBeEdited %}
+                                                <a href="{{ path('app_bon_commande_edit', {'id': order.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if has_privilege('ORDER_CANCEL') and order.status != 'CANCELLED' %}
+                                                <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('Confirmer l\'annulation logique de cette commande ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ order.id) }}">
+                                                    <button type="submit" class="btn btn-outline-danger" title="Annuler">
+                                                        <i class="bi bi-x-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de commande ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                                                    <button type="submit" class="btn btn-outline-dark" title="Supprimer physiquement (Admin)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">Aucun bon de commande trouve</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -36,7 +36,7 @@ class Payment
     private ?string $amount = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'id', nullable: false)]
     private ?User $created_by = null;
 
     /**

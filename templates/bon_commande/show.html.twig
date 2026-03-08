@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bon de commande {{ order.reference }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="mb-1"><i class="bi bi-file-earmark-text"></i> {{ order.reference }}</h1>
+            <div class="text-muted">Cree le {{ order.createdAt|date('d/m/Y H:i') }}</div>
+        </div>
+        <div class="text-end">
+            {% if order.status == 'CANCELLED' %}
+                <span class="badge bg-danger fs-6">Annulee</span>
+            {% elseif order.status == 'DELIVERED' %}
+                <span class="badge bg-success fs-6">Livree</span>
+            {% elseif order.status == 'PARTIALLY_DELIVERED' %}
+                <span class="badge bg-warning text-dark fs-6">Partiellement livree</span>
+            {% elseif order.status == 'CONFIRMED' %}
+                <span class="badge bg-primary fs-6">Confirmee</span>
+            {% else %}
+                <span class="badge bg-secondary fs-6">Brouillon</span>
+            {% endif %}
+            {% if order.cancelledAt %}
+                <div class="small text-muted mt-1">Annulee le {{ order.cancelledAt|date('d/m/Y H:i') }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-person-badge"></i> Client</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div><strong>{{ order.client.name }}</strong></div>
+                    <div class="text-muted">Code: {{ order.client.clientCode }}</div>
+                    <div class="text-muted">MF: {{ order.client.matriculeFiscale }}</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="fw-semibold">Adresse</div>
+                    <div class="text-muted">{{ order.client.address }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Lignes de commande</h5>
+            <span class="badge text-bg-secondary">{{ order.bonCommandeItems|length }} ligne(s)</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Article</th>
+                            <th class="text-end">Quantite</th>
+                            <th class="text-end">Prix unitaire</th>
+                            <th class="text-end">Total ligne</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set totalHt = 0 %}
+                        {% for item in order.bonCommandeItems %}
+                            {% set lineTotal = item.lineTotal %}
+                            {% set totalHt = totalHt + lineTotal %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.article.code }}</strong>
+                                    <div class="text-muted">{{ item.article.designation }}</div>
+                                </td>
+                                <td class="text-end">{{ item.quantity|number_format(2, '.', ' ') }}</td>
+                                <td class="text-end">{{ item.unitPriceSnapshot|number_format(3, '.', ' ') }} TND</td>
+                                <td class="text-end fw-semibold">{{ lineTotal|number_format(3, '.', ' ') }} TND</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Aucune ligne</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Total HT</th>
+                            <th class="text-end">{{ totalHt|number_format(3, '.', ' ') }} TND</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ path('app_bon_commande_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour a la liste
+        </a>
+
+        {% if has_privilege('ORDER_EDIT') and order.canBeEdited %}
+            <a href="{{ path('app_bon_commande_edit', {'id': order.id}) }}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+        {% endif %}
+
+        {% if has_privilege('ORDER_CANCEL') and order.status != 'CANCELLED' %}
+            <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" onsubmit="return confirm('Confirmer l\'annulation logique de cette commande ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ order.id) }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-x-circle"></i> Annuler la commande
+                </button>
+            </form>
+        {% endif %}
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de commande ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                <button type="submit" class="btn btn-dark">
+                    <i class="bi bi-trash"></i> Supprimer physiquement (Admin)
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
