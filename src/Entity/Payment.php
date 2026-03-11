@@ -30,6 +30,9 @@ class Payment
     #[ORM\Column(length: 100)]
     private ?string $reference = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $external_reference = null;
+
     #[ORM\Column(type: 'decimal', precision: 12, scale: 3)]
     #[Assert\NotBlank]
     #[Assert\Positive]
@@ -86,6 +89,17 @@ class Payment
     public function setReference(string $reference): static
     {
         $this->reference = $reference;
+        return $this;
+    }
+
+    public function getExternalReference(): ?string
+    {
+        return $this->external_reference;
+    }
+
+    public function setExternalReference(?string $external_reference): static
+    {
+        $this->external_reference = $external_reference;
         return $this;
     }
 

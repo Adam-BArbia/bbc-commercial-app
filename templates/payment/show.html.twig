@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement #{{ payment.id }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-credit-card"></i> Paiement #{{ payment.id }}</h1>
+        <a href="{{ path('app_payment_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour a la liste
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Informations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2"><span class="text-muted">Date:</span> <strong>{{ payment.paymentDate|date('d/m/Y') }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">Methode:</span>
+                        <strong>
+                            {% if payment.method == 'CASH' %}Especes
+                            {% elseif payment.method == 'CHEQUE' %}Cheque
+                            {% elseif payment.method == 'VIREMENT' %}Virement
+                            {% elseif payment.method == 'CARTE' %}Carte
+                            {% else %}{{ payment.method }}{% endif %}
+                        </strong>
+                    </div>
+                    <div class="mb-2"><span class="text-muted">Ref interne:</span> <strong>{{ payment.reference ?: '-' }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">Ref externe:</span> <strong>{{ payment.externalReference ?: '-' }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">Saisi par:</span> <strong>{{ payment.createdBy.name }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Montants</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total paiement</span>
+                        <strong>{{ payment.amount|number_format(3, '.', ' ') }} TND</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total alloue</span>
+                        <strong>{{ payment.totalAllocated|number_format(3, '.', ' ') }} TND</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Reste non alloue</span>
+                        <strong>{{ (payment.amount - payment.totalAllocated)|number_format(3, '.', ' ') }} TND</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Allocations factures</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Facture</th>
+                            <th class="text-center">Statut</th>
+                            <th class="text-end">Montant alloue</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in payment.paymentFactures %}
+                            <tr>
+                                <td><strong>{{ allocation.facture.reference }}</strong></td>
+                                <td class="text-center">
+                                    {% if allocation.facture.status == 'PAID' %}
+                                        <span class="badge bg-success">Payee</span>
+                                    {% elseif allocation.facture.status == 'PARTIALLY_PAID' %}
+                                        <span class="badge bg-warning text-dark">Partiellement payee</span>
+                                    {% elseif allocation.facture.status == 'UNPAID' %}
+                                        <span class="badge bg-primary">Impayee</span>
+                                    {% elseif allocation.facture.status == 'CANCELLED' %}
+                                        <span class="badge bg-danger">Annulee</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ allocation.facture.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">{{ allocation.amountAllocated|number_format(3, '.', ' ') }} TND</td>
+                                <td class="text-center">
+                                    <a href="{{ path('app_facture_show', {'id': allocation.facture.id}) }}" class="btn btn-outline-secondary btn-sm" title="Voir facture">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">Aucune allocation</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
