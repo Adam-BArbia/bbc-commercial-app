@@ -21,12 +21,12 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
-                <div class="col-md-6">
-                    <input type="text" name="search" class="form-control" 
-                        placeholder="Rechercher par référence, commande ou client..."
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control"
+                        placeholder="Référence, commande ou client..."
                         value="{{ search_query }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <select name="status" class="form-select">
                         <option value="">--- Tous les statuts ---</option>
                         <option value="DRAFT" {% if status_filter == 'DRAFT' %}selected{% endif %}>Brouillon</option>
@@ -34,10 +34,21 @@
                         <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Annulé</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-secondary w-100">
-                        <i class="fas fa-search"></i> Rechercher
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}" placeholder="Du">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}" placeholder="Au">
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-secondary flex-grow-1">
+                        <i class="fas fa-search"></i> Filtrer
                     </button>
+                    {% if search_query != '' or status_filter != '' or date_from != '' or date_to != '' %}
+                    <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                    {% endif %}
                 </div>
             </form>
         </div>

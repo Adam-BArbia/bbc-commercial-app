@@ -11,52 +11,193 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
         
         <style>
-            /* Body styling */
-            body {
-                min-height: 100vh;
-                background-color: #f8f9fa;
+            /* ── CSS custom properties ──────────────────────────────────── */
+            :root {
+                /* Keep Bootstrap primary blue, tweak slightly for richer tone */
+                --bbc-blue:        #1a6fc4;   /* slightly deeper blue for links/accents  */
+                --bbc-blue-light:  #e8f0fb;   /* tinted bg for highlighted cells          */
+
+                /* Light mode tokens */
+                --bbc-body-bg:     #eef1f6;   /* cool off-white — more contrast  vs cards */
+                --bbc-surface:     #ffffff;   /* card / panel surface                     */
+                --bbc-surface-alt: #e4e9f0;   /* card headers, table headers              */
+                --bbc-border:      #c4ccd8;   /* visible but subtle borders               */
+                --bbc-text:        #1a1d23;   /* near-black body text                     */
+                --bbc-text-muted:  #49576a;   /* muted text — WCAG AA on white            */
+                --bbc-footer-bg:   #dde3ec;
             }
-            
-            /* Dark mode custom styles */
+
             [data-bs-theme="dark"] {
-                --bs-body-bg: #212529;
-                --bs-body-color: #dee2e6;
+                --bbc-body-bg:     #12161b;   /* deep navy-black                          */
+                --bbc-surface:     #1c2330;   /* card surface                             */
+                --bbc-surface-alt: #232d3d;   /* card headers, table headers              */
+                --bbc-border:      #2e3d52;   /* visible borders                          */
+                --bbc-text:        #e6edf6;   /* near-white body text                     */
+                --bbc-text-muted:  #8faabf;   /* muted — readable on dark bg              */
+                --bbc-footer-bg:   #161d27;
             }
-            [data-bs-theme="dark"] body {
-                background-color: #212529;
+
+            /* ── Base ───────────────────────────────────────────────────── */
+            html, body {
+                min-height: 100vh;
             }
-            [data-bs-theme="dark"] .navbar {
-                background-color: #1a1d20 !important;
+            body {
+                background-color: var(--bbc-body-bg);
+                color: var(--bbc-text);
             }
-            [data-bs-theme="dark"] .bg-light {
-                background-color: #343a40 !important;
-                color: #dee2e6 !important;
+
+            /* ── Navbar ─────────────────────────────────────────────────── */
+            .navbar.bg-primary {
+                background-color: #1558a8 !important;   /* rich dark-blue, better contrast  */
             }
-            [data-bs-theme="dark"] .table {
-                --bs-table-bg: #212529;
-                --bs-table-striped-bg: #2c3034;
-                --bs-table-hover-bg: #323539;
-                color: #dee2e6;
+            [data-bs-theme="dark"] .navbar.bg-primary {
+                background-color: #0e3d78 !important;
             }
-            [data-bs-theme="dark"] .card {
-                background-color: #343a40;
-                border-color: #495057;
+
+            /* ── Cards ──────────────────────────────────────────────────── */
+            .card {
+                background-color: var(--bbc-surface);
+                border-color: var(--bbc-border);
             }
-            [data-bs-theme="dark"] .form-control,
-            [data-bs-theme="dark"] .form-select {
-                background-color: #495057;
+            .card-header.bg-light,
+            .card-header {
+                background-color: var(--bbc-surface-alt) !important;
+                color: var(--bbc-text) !important;
+                border-bottom-color: var(--bbc-border) !important;
+            }
+
+            /* ── Tables ─────────────────────────────────────────────────── */
+            .table {
+                --bs-table-color:      var(--bbc-text);
+                --bs-table-bg:         var(--bbc-surface);
+                --bs-table-striped-bg: color-mix(in srgb, var(--bbc-surface-alt) 60%, var(--bbc-surface));
+                --bs-table-hover-bg:   var(--bbc-blue-light);
+                --bs-table-border-color: var(--bbc-border);
+            }
+            .table thead.table-light th,
+            .table thead th {
+                background-color: var(--bbc-surface-alt) !important;
+                color: var(--bbc-text) !important;
+                border-color: var(--bbc-border) !important;
+            }
+
+            /* ── Forms ──────────────────────────────────────────────────── */
+            .form-control,
+            .form-select {
+                background-color: var(--bbc-surface);
+                border-color: var(--bbc-border);
+                color: var(--bbc-text);
+            }
+            .form-control:focus,
+            .form-select:focus {
+                background-color: var(--bbc-surface);
+                border-color: var(--bbc-blue);
+                color: var(--bbc-text);
+                box-shadow: 0 0 0 0.2rem rgba(26, 111, 196, 0.25);
+            }
+            .form-label {
+                color: var(--bbc-text);
+                font-weight: 500;
+            }
+
+            /* ── Text utilities ─────────────────────────────────────────── */
+            .text-muted {
+                color: var(--bbc-text-muted) !important;
+            }
+
+            /* ── Dropdown menus ─────────────────────────────────────────── */
+            .dropdown-menu {
+                background-color: var(--bbc-surface);
+                border-color: var(--bbc-border);
+            }
+            .dropdown-item {
+                color: var(--bbc-text);
+            }
+            .dropdown-item:hover, .dropdown-item:focus {
+                background-color: var(--bbc-surface-alt);
+                color: var(--bbc-text);
+            }
+            .dropdown-divider {
+                border-color: var(--bbc-border);
+            }
+
+            /* ── Alerts ─────────────────────────────────────────────────── */
+            [data-bs-theme="dark"] .alert-primary {
+                background-color: #1a3a5c;
+                border-color: #1558a8;
+                color: #cfe0ff;
+            }
+            [data-bs-theme="dark"] .alert-success {
+                background-color: #1a3d2b;
+                border-color: #28a745;
+                color: #c5e8d0;
+            }
+            [data-bs-theme="dark"] .alert-info {
+                background-color: #133040;
+                border-color: #0dcaf0;
+                color: #b8e8f5;
+            }
+            [data-bs-theme="dark"] .alert-warning {
+                background-color: #3d2e10;
+                border-color: #ffc107;
+                color: #ffe8a1;
+            }
+            [data-bs-theme="dark"] .alert-danger {
+                background-color: #3d1a1a;
+                border-color: #dc3545;
+                color: #f5c2c7;
+            }
+            [data-bs-theme="dark"] .alert-secondary {
+                background-color: #2c333d;
                 border-color: #6c757d;
-                color: #fff;
+                color: #c8d3de;
             }
-            [data-bs-theme="dark"] .form-control:focus,
-            [data-bs-theme="dark"] .form-select:focus {
-                background-color: #495057;
-                border-color: #86b7fe;
-                color: #fff;
+
+            /* ── Borders & misc ─────────────────────────────────────────── */
+            .border-top,
+            .border-bottom,
+            .border {
+                border-color: var(--bbc-border) !important;
             }
-            [data-bs-theme="dark"] .border-top {
-                border-color: #495057 !important;
+
+            /* ── Footer ─────────────────────────────────────────────────── */
+            footer.bg-light {
+                background-color: var(--bbc-footer-bg) !important;
+                border-color: var(--bbc-border) !important;
+                color: var(--bbc-text-muted) !important;
             }
+
+            /* ── Badges: white text on Bootstrap's original yellow ─────── */
+            .badge.bg-warning {
+                color: #fff !important;
+            }
+
+            /* ── KPI cards on dashboard – keep rich colors but fix text ── */
+            .card.bg-primary .text-white-50,
+            .card.bg-success .text-white-50,
+            .card.bg-info    .text-white-50 {
+                opacity: 0.85;   /* was 0.5 – too low contrast */
+            }
+
+            /* ── Pagination ─────────────────────────────────────────────── */
+            .page-link {
+                background-color: var(--bbc-surface);
+                border-color: var(--bbc-border);
+                color: var(--bbc-blue);
+            }
+            .page-link:hover {
+                background-color: var(--bbc-surface-alt);
+            }
+            .page-item.active .page-link {
+                background-color: #1558a8;
+                border-color: #1558a8;
+            }
+            .page-item.disabled .page-link {
+                background-color: var(--bbc-surface);
+                color: var(--bbc-text-muted);
+            }
+
+            /* ── Theme toggle button ────────────────────────────────────── */
             .theme-toggle {
                 cursor: pointer;
                 transition: transform 0.3s ease;
@@ -120,6 +261,9 @@
                                 {% if has_privilege('PAYMENT_VIEW') %}
                                 <li><a class="dropdown-item" href="{{ path('app_payment_index') }}">Paiements</a></li>
                                 {% endif %}
+                                {% if has_privilege('AUDIT_VIEW') %}
+                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">Journal d'audit</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         {% endif %}
@@ -132,7 +276,9 @@
                                 <li><a class="dropdown-item" href="{{ path('admin_user_index') }}">Utilisateurs</a></li>
                                 <li><a class="dropdown-item" href="{{ path('admin_role_index') }}">Rôles</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Journal d'audit</a></li>
+                                {% if has_privilege('AUDIT_VIEW') %}
+                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">Journal d'audit</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         {% endif %}

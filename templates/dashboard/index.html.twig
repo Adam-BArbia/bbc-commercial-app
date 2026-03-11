@@ -3,214 +3,322 @@
 {% block title %}Tableau de bord{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
         <div class="col-12">
-            <h1 class="mb-4">
+            <h1 class="h3 mb-1">
                 <i class="bi bi-speedometer2"></i> Tableau de bord
             </h1>
-            
-            {# Role-specific welcome message #}
+
+            {# Role-specific welcome banner #}
             {% if is_granted('ROLE_ADMIN') %}
-            <div class="alert alert-primary border-primary">
-                <h5><i class="bi bi-shield-check"></i> Bienvenue, Administrateur !</h5>
-                <p class="mb-0">
-                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
-                    <span class="badge bg-primary">{{ app.user.role.name }}</span><br>
-                    <small class="text-muted">Vous avez un accès complet à toutes les fonctionnalités du système.</small>
-                </p>
+            <div class="alert alert-primary border-primary py-2">
+                <i class="bi bi-shield-check"></i>
+                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                <span class="badge bg-primary">{{ app.user.role.name }}</span>
+                <small class="text-muted ms-2">Accès complet à toutes les fonctionnalités.</small>
             </div>
             {% elseif is_granted('ROLE_COMMERCIAL') %}
-            <div class="alert alert-success border-success">
-                <h5><i class="bi bi-briefcase"></i> Bienvenue, Commercial !</h5>
-                <p class="mb-0">
-                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
-                    <span class="badge bg-success">{{ app.user.role.name }}</span><br>
-                    <small class="text-muted">Vous pouvez gérer les clients, articles et tout le flux commercial.</small>
-                </p>
+            <div class="alert alert-success border-success py-2">
+                <i class="bi bi-briefcase"></i>
+                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                <span class="badge bg-success">{{ app.user.role.name }}</span>
+                <small class="text-muted ms-2">Gestion clients, articles et flux commercial.</small>
             </div>
             {% elseif is_granted('ROLE_COMPTABLE') %}
-            <div class="alert alert-info border-info">
-                <h5><i class="bi bi-calculator"></i> Bienvenue, Comptable !</h5>
-                <p class="mb-0">
-                    Vous êtes connecté en tant que <strong>{{ app.user.name }}</strong> avec le rôle 
-                    <span class="badge bg-info">{{ app.user.role.name }}</span><br>
-                    <small class="text-muted">Vous avez un accès en lecture seule aux données commerciales et au journal d'audit.</small>
-                </p>
+            <div class="alert alert-info border-info py-2">
+                <i class="bi bi-calculator"></i>
+                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                <span class="badge bg-info">{{ app.user.role.name }}</span>
+                <small class="text-muted ms-2">Accès en lecture seule aux données commerciales.</small>
             </div>
             {% else %}
-            <div class="alert alert-secondary">
-                <p class="mb-0">
-                    Bienvenue, <strong>{{ app.user.name }}</strong> !<br>
-                    <small>Rôle : <span class="badge bg-secondary">{{ app.user.role.name }}</span></small>
-                </p>
+            <div class="alert alert-secondary py-2">
+                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                <span class="badge bg-secondary">{{ app.user.role.name }}</span>
             </div>
             {% endif %}
         </div>
     </div>
 
-    <div class="row g-4">
-        {# Quick Stats Cards #}
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+    {# ── KPI cards ─────────────────────────────────────────────────────── #}
+    <div class="row g-3 mb-4">
+
+        {% if has_privilege('ORDER_VIEW') %}
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_bon_commande_index', {status: 'CONFIRMED'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-primary h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title text-white-50 mb-1">Commandes</h6>
-                            <h2 class="mb-0">0</h2>
+                            <div class="text-white-50 small mb-1">Commandes en cours</div>
+                            <div class="fs-2 fw-bold">{{ ordersInProgress }}</div>
                         </div>
                         <i class="bi bi-cart3 fs-1 opacity-50"></i>
                     </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>Confirmées / partiellement livrées</small>
+                    </div>
                 </div>
-                <div class="card-footer bg-white bg-opacity-25">
-                    <small>En attente de livraison</small>
-                </div>
-            </div>
+            </a>
         </div>
+        {% endif %}
 
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+        {% if has_privilege('DELIVERY_VIEW') %}
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_bon_livraison_index', {status: 'VALIDATED'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title text-white-50 mb-1">Livraisons</h6>
-                            <h2 class="mb-0">0</h2>
+                            <div class="text-white-50 small mb-1">Livraisons non facturées</div>
+                            <div class="fs-2 fw-bold">{{ deliveriesNotInvoiced }}</div>
                         </div>
                         <i class="bi bi-truck fs-1 opacity-50"></i>
                     </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>Validées sans facture associée</small>
+                    </div>
                 </div>
-                <div class="card-footer bg-white bg-opacity-25">
-                    <small>Non facturées</small>
-                </div>
-            </div>
+            </a>
         </div>
+        {% endif %}
 
-        <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+        {% if has_privilege('INVOICE_VIEW') %}
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_facture_index', {status: 'UNPAID'}) }}" class="text-decoration-none">
+                <div class="card text-dark bg-warning h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title text-white-50 mb-1">Factures</h6>
-                            <h2 class="mb-0">0</h2>
+                            <div class="text-black-50 small mb-1">Factures impayées</div>
+                            <div class="fs-2 fw-bold">{{ invoicesUnpaid }}</div>
                         </div>
                         <i class="bi bi-receipt fs-1 opacity-50"></i>
                     </div>
+                    <div class="card-footer bg-black bg-opacity-10 py-1">
+                        <small>Impayées ou partiellement payées</small>
+                    </div>
                 </div>
-                <div class="card-footer bg-white bg-opacity-25">
-                    <small>Non payées</small>
-                </div>
-            </div>
+            </a>
         </div>
+        {% endif %}
 
-        <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
+        {% if has_privilege('CLIENT_VIEW') %}
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_client_index') }}" class="text-decoration-none">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title text-white-50 mb-1">Clients</h6>
-                            <h2 class="mb-0">0</h2>
+                            <div class="text-white-50 small mb-1">Clients actifs</div>
+                            <div class="fs-2 fw-bold">{{ activeClients }}</div>
                         </div>
                         <i class="bi bi-people fs-1 opacity-50"></i>
                     </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>Comptes clients actifs</small>
+                    </div>
                 </div>
-                <div class="card-footer bg-white bg-opacity-25">
-                    <small>Clients actifs</small>
-                </div>
-            </div>
+            </a>
         </div>
+        {% endif %}
+
     </div>
 
-    <div class="row mt-4">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Activités récentes
-                    </h5>
+    {# ── Main content row ──────────────────────────────────────────────── #}
+    <div class="row g-3">
+
+        {# Recent orders ─────────────────────────────────────── #}
+        {% if has_privilege('ORDER_VIEW') %}
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-cart3"></i> Commandes récentes</h6>
+                    <a href="{{ path('app_bon_commande_index') }}" class="btn btn-sm btn-outline-secondary">
+                        Voir tout
+                    </a>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted text-center py-4">
-                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                        Aucune activité récente
+                <div class="card-body p-0">
+                    {% if recentOrders|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Référence</th>
+                                    <th>Client</th>
+                                    <th>Date</th>
+                                    <th class="text-center">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recentOrders %}
+                                {% set clientName = order.clientSnapshot.name|default(order.client ? order.client.name : '—') %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('app_bon_commande_show', {id: order.id}) }}" class="fw-semibold text-decoration-none">
+                                            {{ order.reference }}
+                                        </a>
+                                    </td>
+                                    <td>{{ clientName }}</td>
+                                    <td><small>{{ order.createdAt|date('d/m/Y') }}</small></td>
+                                    <td class="text-center">
+                                        {% if order.status == 'DRAFT' %}
+                                            <span class="badge bg-secondary">Brouillon</span>
+                                        {% elseif order.status == 'CONFIRMED' %}
+                                            <span class="badge bg-primary">Confirmée</span>
+                                        {% elseif order.status == 'PARTIALLY_DELIVERED' %}
+                                            <span class="badge bg-warning text-dark">Part. livrée</span>
+                                        {% elseif order.status == 'DELIVERED' %}
+                                            <span class="badge bg-success">Livrée</span>
+                                        {% elseif order.status == 'CANCELLED' %}
+                                            <span class="badge bg-danger">Annulée</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4 mb-0">
+                        <i class="bi bi-inbox fs-3 d-block mb-1"></i>
+                        Aucune commande
                     </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
+        {% endif %}
 
-        <div class="col-lg-4">
+        {# Right column: pending invoices + quick actions ────── #}
+        <div class="col-lg-5">
+
+            {# Pending invoices ─────── #}
+            {% if has_privilege('INVOICE_VIEW') %}
+            <div class="card mb-3">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-receipt text-warning"></i> Factures en attente</h6>
+                    <a href="{{ path('app_facture_index', {status: 'UNPAID'}) }}" class="btn btn-sm btn-outline-secondary">
+                        Voir tout
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if pendingInvoices|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Référence</th>
+                                    <th class="text-end">Total TTC</th>
+                                    <th class="text-center">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inv in pendingInvoices %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('app_facture_show', {id: inv.id}) }}" class="fw-semibold text-decoration-none">
+                                            {{ inv.reference }}
+                                        </a>
+                                    </td>
+                                    <td class="text-end">{{ inv.totalTtc|number_format(3, '.', ' ') }}</td>
+                                    <td class="text-center">
+                                        {% if inv.status == 'UNPAID' %}
+                                            <span class="badge bg-danger">Impayée</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Part. payée</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3 mb-0">
+                        <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                        <small>Aucune facture en attente</small>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Quick actions ─────────── #}
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-check"></i> Actions rapides
-                    </h5>
+                    <h6 class="mb-0"><i class="bi bi-lightning-charge"></i> Actions rapides</h6>
                 </div>
                 <div class="card-body">
-                    {% if is_granted('ROLE_ADMIN') %}
-                    <div class="alert alert-warning alert-sm mb-3">
-                        <small><i class="bi bi-info-circle"></i> Mode Administrateur - Accès complet</small>
-                    </div>
-                    {% elseif is_granted('ROLE_COMPTABLE') %}
-                    <div class="alert alert-info alert-sm mb-3">
-                        <small><i class="bi bi-eye"></i> Mode Lecture seule</small>
+                    {% if is_granted('ROLE_COMPTABLE') and not is_granted('ROLE_ADMIN') %}
+                    <div class="alert alert-info py-2 mb-3">
+                        <small><i class="bi bi-eye"></i> Mode lecture seule — création désactivée</small>
                     </div>
                     {% endif %}
-                    
+
                     <div class="d-grid gap-2">
-                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COMMERCIAL') %}
-                        <a href="#" class="btn btn-outline-primary">
+                        {% if has_privilege('ORDER_CREATE') %}
+                        <a href="{{ path('app_bon_commande_new') }}" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-plus-circle"></i> Nouveau bon de commande
                         </a>
-                        <a href="#" class="btn btn-outline-success">
+                        {% endif %}
+                        {% if has_privilege('DELIVERY_CREATE') %}
+                        <a href="{{ path('app_bon_livraison_new') }}" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-plus-circle"></i> Nouveau bon de livraison
                         </a>
-                        <a href="#" class="btn btn-outline-warning">
+                        {% endif %}
+                        {% if has_privilege('INVOICE_CREATE') %}
+                        <a href="{{ path('app_facture_new') }}" class="btn btn-outline-warning btn-sm">
                             <i class="bi bi-plus-circle"></i> Nouvelle facture
                         </a>
-                        <a href="#" class="btn btn-outline-info">
+                        {% endif %}
+                        {% if has_privilege('PAYMENT_CREATE') %}
+                        <a href="{{ path('app_payment_new') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Nouveau paiement
+                        </a>
+                        {% endif %}
+                        {% if has_privilege('CLIENT_CREATE') %}
+                        <a href="{{ path('app_client_new') }}" class="btn btn-outline-info btn-sm">
                             <i class="bi bi-plus-circle"></i> Nouveau client
                         </a>
-                        {% else %}
-                        <div class="text-muted text-center py-3">
-                            <i class="bi bi-lock fs-3 d-block mb-2"></i>
-                            <small>Vous n'avez pas les permissions pour créer de nouveaux éléments.</small>
-                        </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    {# Role permissions summary #}
-    <div class="row mt-4">
+
+        </div>{# /col-lg-5 #}
+
+    </div>{# /row #}
+
+    {# ── Privileges summary (collapsible) ──────────────────────────────── #}
+    <div class="row mt-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">
+                    <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#privilegesCollapse" role="button">
                         <i class="bi bi-key"></i> Vos privilèges ({{ user_privileges()|length }})
-                    </h5>
+                        <i class="bi bi-chevron-down float-end"></i>
+                    </a>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% if app.user.role.privileges|length > 0 %}
-                            {% for privilege in app.user.role.privileges %}
-                                <div class="col-md-4 mb-2">
-                                    <small>
-                                        <i class="bi bi-check-circle-fill text-success"></i> 
-                                        <strong>{{ privilege.code }}</strong><br>
-                                        <span class="text-muted ms-4">{{ privilege.description }}</span>
-                                    </small>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="col-12">
+                <div class="collapse" id="privilegesCollapse">
+                    <div class="card-body">
+                        <div class="row">
+                            {% if app.user.role.privileges|length > 0 %}
+                                {% for privilege in app.user.role.privileges %}
+                                    <div class="col-md-4 mb-2">
+                                        <small>
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            <strong>{{ privilege.code }}</strong>
+                                            <span class="text-muted ms-1">— {{ privilege.description }}</span>
+                                        </small>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
                                 <p class="text-muted mb-0">Aucun privilège assigné</p>
-                            </div>
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}

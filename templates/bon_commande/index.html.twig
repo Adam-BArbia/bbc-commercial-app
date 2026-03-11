@@ -16,7 +16,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="search" class="form-label">Rechercher</label>
                     <input
                         type="text"
@@ -24,10 +24,10 @@
                         id="search"
                         name="search"
                         value="{{ search }}"
-                        placeholder="Reference, client, code client..."
+                        placeholder="Référence, client, code client..."
                     >
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2">
                     <label for="status" class="form-label">Statut</label>
                     <select class="form-select" id="status" name="status">
                         <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Tous</option>
@@ -36,10 +36,23 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-secondary w-100">
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">Du</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ dateFrom }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">Au</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ dateTo }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-secondary flex-grow-1">
                         <i class="bi bi-search"></i> Filtrer
                     </button>
+                    {% if search != '' or statusFilter != 'all' or dateFrom != '' or dateTo != '' %}
+                    <a href="{{ path('app_bon_commande_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                    {% endif %}
                 </div>
             </form>
         </div>

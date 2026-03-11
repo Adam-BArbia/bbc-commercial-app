@@ -25,6 +25,8 @@ class BonCommandeController extends AbstractController
     {
         $search = trim((string) $request->query->get('search', ''));
         $statusFilter = (string) $request->query->get('status', 'all');
+        $dateFrom = (string) $request->query->get('date_from', '');
+        $dateTo = (string) $request->query->get('date_to', '');
 
         $queryBuilder = $bonCommandeRepository->createQueryBuilder('bc')
             ->leftJoin('bc.client', 'c')
@@ -43,18 +45,32 @@ class BonCommandeController extends AbstractController
                 ->setParameter('status', $statusFilter);
         }
 
+        if ($dateFrom !== '') {
+            $queryBuilder
+                ->andWhere('bc.created_at >= :dateFrom')
+                ->setParameter('dateFrom', new \DateTime($dateFrom . ' 00:00:00'));
+        }
+
+        if ($dateTo !== '') {
+            $queryBuilder
+                ->andWhere('bc.created_at <= :dateTo')
+                ->setParameter('dateTo', new \DateTime($dateTo . ' 23:59:59'));
+        }
+
         $orders = $queryBuilder->getQuery()->getResult();
 
         return $this->render('bon_commande/index.html.twig', [
-            'orders' => $orders,
-            'search' => $search,
-            'statusFilter' => $statusFilter,
+            'orders'        => $orders,
+            'search'        => $search,
+            'statusFilter'  => $statusFilter,
+            'dateFrom'      => $dateFrom,
+            'dateTo'        => $dateTo,
             'statusChoices' => [
-                'DRAFT' => 'Brouillon',
-                'CONFIRMED' => 'Confirmee',
+                'DRAFT'               => 'Brouillon',
+                'CONFIRMED'           => 'Confirmee',
                 'PARTIALLY_DELIVERED' => 'Partiellement livree',
-                'DELIVERED' => 'Livree',
-                'CANCELLED' => 'Annulee',
+                'DELIVERED'           => 'Livree',
+                'CANCELLED'           => 'Annulee',
             ],
         ]);
     }

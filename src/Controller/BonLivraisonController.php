@@ -28,8 +28,10 @@ class BonLivraisonController extends AbstractController
         BonLivraisonRepository $repository,
         BonCommandeRepository $bonCommandeRepository
     ): Response {
-        $searchQuery = $request->query->get('search', '');
-        $statusFilter = $request->query->get('status', '');
+        $searchQuery  = (string) $request->query->get('search', '');
+        $statusFilter = (string) $request->query->get('status', '');
+        $dateFrom     = (string) $request->query->get('date_from', '');
+        $dateTo       = (string) $request->query->get('date_to', '');
 
         $query = $repository
             ->createQueryBuilder('bl')
@@ -37,8 +39,8 @@ class BonLivraisonController extends AbstractController
             ->leftJoin('bc.client', 'c')
             ->orderBy('bl.created_at', 'DESC');
 
-        if ($searchQuery) {
-            $query->where($query->expr()->orX(
+        if ($searchQuery !== '') {
+            $query->andWhere($query->expr()->orX(
                 $query->expr()->like('bl.reference', ':search'),
                 $query->expr()->like('c.name', ':search'),
                 $query->expr()->like('bc.reference', ':search')
@@ -46,9 +48,19 @@ class BonLivraisonController extends AbstractController
             ->setParameter('search', '%' . $searchQuery . '%');
         }
 
-        if ($statusFilter) {
+        if ($statusFilter !== '') {
             $query->andWhere('bl.status = :status')
                 ->setParameter('status', $statusFilter);
+        }
+
+        if ($dateFrom !== '') {
+            $query->andWhere('bl.created_at >= :dateFrom')
+                ->setParameter('dateFrom', new \DateTime($dateFrom . ' 00:00:00'));
+        }
+
+        if ($dateTo !== '') {
+            $query->andWhere('bl.created_at <= :dateTo')
+                ->setParameter('dateTo', new \DateTime($dateTo . ' 23:59:59'));
         }
 
         $deliveryNotes = $query->getQuery()->getResult();
@@ -63,9 +75,11 @@ class BonLivraisonController extends AbstractController
             ->getResult();
 
         return $this->render('bon_livraison/index.html.twig', [
-            'delivery_notes' => $deliveryNotes,
-            'search_query' => $searchQuery,
-            'status_filter' => $statusFilter,
+            'delivery_notes'  => $deliveryNotes,
+            'search_query'    => $searchQuery,
+            'status_filter'   => $statusFilter,
+            'date_from'       => $dateFrom,
+            'date_to'         => $dateTo,
             'available_orders' => $availableOrders,
         ]);
     }
