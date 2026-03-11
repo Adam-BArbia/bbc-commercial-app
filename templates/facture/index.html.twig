@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Factures{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-receipt"></i> Factures</h1>
+        {% if has_privilege('INVOICE_CREATE') %}
+            <a href="{{ path('app_facture_new') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nouvelle facture
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Recherche</label>
+                    <input
+                        type="text"
+                        id="search"
+                        name="search"
+                        class="form-control"
+                        value="{{ search }}"
+                        placeholder="Reference, client, code client..."
+                    >
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Tous</option>
+                        {% for code, label in statusChoices %}
+                            <option value="{{ code }}" {% if statusFilter == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">Date debut</label>
+                    <input type="date" id="date_from" name="date_from" value="{{ dateFrom }}" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">Date fin</label>
+                    <input type="date" id="date_to" name="date_to" value="{{ dateTo }}" class="form-control">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Liste ({{ invoices|length }})</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if invoices|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reference</th>
+                                <th>Client</th>
+                                <th>Date creation</th>
+                                <th class="text-center">BL lies</th>
+                                <th class="text-end">Total TTC</th>
+                                <th class="text-center">Statut</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                                {% set firstDelivery = invoice.bonLivraisons|first %}
+                                {% set order = firstDelivery and firstDelivery.bonCommande ? firstDelivery.bonCommande : null %}
+                                {% set client = order ? order.client : null %}
+                                {% set clientSnapshot = invoice.clientSnapshot %}
+                                {% set clientName = clientSnapshot and clientSnapshot.name is defined ? clientSnapshot.name : (order ? order.clientSnapshot.name|default(client ? client.name : '-') : '-') %}
+                                {% set clientCode = clientSnapshot and clientSnapshot.client_code is defined ? clientSnapshot.client_code : (order ? order.clientSnapshot.client_code|default(client ? client.clientCode : '-') : '-') %}
+                                {% set deliveryCount = invoice.deliverySnapshot ? invoice.deliverySnapshot|length : invoice.bonLivraisons|length %}
+                                <tr>
+                                    <td><strong>{{ invoice.reference }}</strong></td>
+                                    <td>
+                                        {{ clientName }}
+                                        {% if clientCode != '-' %}
+                                            <br>
+                                            <small class="text-muted">{{ clientCode }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ invoice.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td class="text-center">{{ deliveryCount }}</td>
+                                    <td class="text-end fw-semibold">{{ invoice.totalTtc|number_format(3, '.', ' ') }} TND</td>
+                                    <td class="text-center">
+                                        {% if invoice.status == 'CANCELLED' %}
+                                            <span class="badge bg-danger">Annulee</span>
+                                        {% elseif invoice.status == 'PAID' %}
+                                            <span class="badge bg-success">Payee</span>
+                                        {% elseif invoice.status == 'PARTIALLY_PAID' %}
+                                            <span class="badge bg-warning text-dark">Partiellement payee</span>
+                                        {% elseif invoice.status == 'UNPAID' %}
+                                            <span class="badge bg-primary">Impayee</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ invoice.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ path('app_facture_show', {'id': invoice.id}) }}" class="btn btn-outline-secondary" title="Voir">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">Aucune facture trouvee</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

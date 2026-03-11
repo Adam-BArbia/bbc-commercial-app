@@ -47,7 +47,7 @@ class BonLivraison
     /**
      * @var Collection<int, BonLivraisonItem>
      */
-    #[ORM\OneToMany(targetEntity: BonLivraisonItem::class, mappedBy: 'bon_livraison', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: BonLivraisonItem::class, mappedBy: 'bon_livraison', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $bonLivraisonItems;
 
     public function __construct()

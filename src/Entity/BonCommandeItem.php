@@ -110,6 +110,10 @@ class BonCommandeItem
     {
         $total = 0;
         foreach ($this->bonLivraisonItems as $item) {
+            // Cancelled delivery notes must not consume ordered quantity.
+            if ($item->getBonLivraison()?->getStatus() === 'CANCELLED') {
+                continue;
+            }
             $total += (float) $item->getQuantityDelivered();
         }
         return (string) $total;

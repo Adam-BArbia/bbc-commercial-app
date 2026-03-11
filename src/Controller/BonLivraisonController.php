@@ -25,7 +25,8 @@ class BonLivraisonController extends AbstractController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
         Request $request,
-        BonLivraisonRepository $repository
+        BonLivraisonRepository $repository,
+        BonCommandeRepository $bonCommandeRepository
     ): Response {
         $searchQuery = $request->query->get('search', '');
         $statusFilter = $request->query->get('status', '');
@@ -52,17 +53,26 @@ class BonLivraisonController extends AbstractController
 
         $deliveryNotes = $query->getQuery()->getResult();
 
+        $availableOrders = $bonCommandeRepository
+            ->createQueryBuilder('bc')
+            ->leftJoin('bc.client', 'c')
+            ->andWhere('bc.status != :cancelled')
+            ->setParameter('cancelled', 'CANCELLED')
+            ->orderBy('bc.reference', 'DESC')
+            ->getQuery()
+            ->getResult();
+
         return $this->render('bon_livraison/index.html.twig', [
             'delivery_notes' => $deliveryNotes,
             'search_query' => $searchQuery,
             'status_filter' => $statusFilter,
+            'available_orders' => $availableOrders,
         ]);
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
-        BonCommandeRepository $bonCommandeRepository,
         DocumentCounterRepository $documentCounterRepository,
         EntityManagerInterface $entityManager
     ): Response {
@@ -100,30 +110,29 @@ class BonLivraisonController extends AbstractController
 
             // Add delivery items
             $hasValidItems = false;
+            $validationErrors = [];
+            
             foreach ($deliveryItems as $orderItemId => $quantity) {
-                $quantity = (float) $quantity;
+                $quantity = (int) $quantity;
                 if ($quantity > 0) {
-                    $hasValidItems = true;
                     $orderItem = $bonCommande->getBonCommandeItems()->filter(
                         fn($item) => $item->getId() == $orderItemId
                     )->first();
 
                     if ($orderItem) {
-                        $remainingQty = (float)($orderItem->getRemainingQuantity() ?? $orderItem->getQuantity());
+                        $remainingQty = (int)($orderItem->getRemainingQuantity() ?? $orderItem->getQuantity());
                         
                         if ($quantity > $remainingQty) {
-                            $this->addFlash('warning', 
-                                sprintf(
-                                    'Quantité livrée %.2f dépasse la quantité restante %.2f pour %s. Ajustée à %.2f.',
-                                    $quantity,
-                                    $remainingQty,
-                                    $orderItem->getArticle()?->getDesignation() ?? 'Unknown',
-                                    $remainingQty
-                                )
+                            $validationErrors[] = sprintf(
+                                'La quantité %d pour "%s" dépasse la quantité restante de %d unités.',
+                                $quantity,
+                                $orderItem->getArticle()?->getDesignation() ?? 'Article',
+                                $remainingQty
                             );
-                            $quantity = $remainingQty;
+                            continue;
                         }
 
+                        $hasValidItems = true;
                         $deliveryItem = new BonLivraisonItem();
                         $deliveryItem->setBonLivraison($bonLivraison);
                         $deliveryItem->setBonCommandeItem($orderItem);
@@ -132,6 +141,16 @@ class BonLivraisonController extends AbstractController
                         $bonLivraison->addBonLivraisonItem($deliveryItem);
                     }
                 }
+            }
+            
+            if (!empty($validationErrors)) {
+                foreach ($validationErrors as $error) {
+                    $this->addFlash('error', $error);
+                }
+                return $this->render('bon_livraison/new.html.twig', [
+                    'form' => $form,
+                    'bon_livraison' => $bonLivraison,
+                ]);
             }
 
             if (!$hasValidItems) {
@@ -185,6 +204,46 @@ class BonLivraisonController extends AbstractController
 
             if (empty($deliveryItems)) {
                 $this->addFlash('error', 'Veuillez entrer au moins une quantité.');
+                return $this->redirectToRoute('app_bon_livraison_edit', ['id' => $bonLivraison->getId()]);
+            }
+
+            // Validate quantities before clearing (exclude current BL from delivered count)
+            $validationErrors = [];
+            foreach ($deliveryItems as $orderItemId => $quantity) {
+                $quantity = (float) $quantity;
+                if ($quantity > 0) {
+                    $orderItem = $bonCommande->getBonCommandeItems()->filter(
+                        fn($item) => $item->getId() == $orderItemId
+                    )->first();
+
+                    if ($orderItem) {
+                        // Calculate delivered excluding current BL being edited
+                        $totalDelivered = (float) $orderItem->getDeliveredQuantity();
+                        $currentBLitem = $bonLivraison->getBonLivraisonItems()->filter(
+                            fn($item) => $item->getBonCommandeItem()->getId() == $orderItemId
+                        )->first();
+                        $currentQty = $currentBLitem ? (float) $currentBLitem->getQuantityDelivered() : 0;
+                        $deliveredExcludingThis = $totalDelivered - $currentQty;
+                        
+                        // Check if new quantity + other deliveries exceeds ordered
+                        $orderedQty = (float) $orderItem->getQuantity();
+                        if (($quantity + $deliveredExcludingThis) > $orderedQty) {
+                            $validationErrors[] = sprintf(
+                                'La quantité %.2f pour "%s" dépasse la quantité commandée. Maximum autorisé: %.2f (déjà livré par autres BL: %.2f)',
+                                $quantity,
+                                $orderItem->getArticle()?->getDesignation() ?? 'Article',
+                                $orderedQty - $deliveredExcludingThis,
+                                $deliveredExcludingThis
+                            );
+                        }
+                    }
+                }
+            }
+
+            if (!empty($validationErrors)) {
+                foreach ($validationErrors as $error) {
+                    $this->addFlash('error', $error);
+                }
                 return $this->redirectToRoute('app_bon_livraison_edit', ['id' => $bonLivraison->getId()]);
             }
 
@@ -248,6 +307,57 @@ class BonLivraisonController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', sprintf('Le bon de livraison %s a été annulé.', $bonLivraison->getReference()));
+        return $this->redirectToRoute('app_bon_livraison_index');
+    }
+
+    #[Route('/{id}/confirm', name: 'confirm', methods: ['POST'])]
+    #[IsGranted('ROLE_COMMERCIAL')]
+    public function confirm(
+        Request $request,
+        BonLivraison $bonLivraison,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('confirm' . $bonLivraison->getId(), (string) $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+        }
+
+        if ($bonLivraison->getStatus() === 'CANCELLED') {
+            $this->addFlash('error', 'Impossible de confirmer un bon de livraison annulé.');
+            return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+        }
+
+        if ($bonLivraison->getStatus() === 'VALIDATED') {
+            $this->addFlash('warning', 'Ce bon de livraison est déjà confirmé.');
+            return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+        }
+
+        $bonLivraison->setStatus('VALIDATED');
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('Le bon de livraison %s a été confirmé.', $bonLivraison->getReference()));
+        return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(
+        Request $request,
+        BonLivraison $bonLivraison,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('delete' . $bonLivraison->getId(), (string) $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+        }
+
+        if ($bonLivraison->isInvoiced()) {
+            $this->addFlash('error', 'Impossible de supprimer un bon de livraison facturé.');
+            return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
+        }
+
+        $reference = $bonLivraison->getReference();
+        $entityManager->remove($bonLivraison);
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf('Le bon de livraison %s a été supprimé.', $reference));
         return $this->redirectToRoute('app_bon_livraison_index');
     }
 

@@ -2,31 +2,26 @@
 
 {% block title %}{{ bon_livraison.reference }} - Bon de livraison - BBC Commercial{% endblock %}
 
-{% block content %}
-<div class="container-fluid mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="h3">
-                <i class="fas fa-truck"></i> 
-                {{ bon_livraison.reference }}
-            </h1>
+{% block body %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="mb-1"><i class="bi bi-truck"></i> {{ bon_livraison.reference }}</h1>
+            <div class="text-muted">Cree le {{ bon_livraison.createdAt|date('d/m/Y H:i') }}</div>
         </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Retour
-            </a>
-            {% if bon_livraison.canBeEdited() %}
-            <a href="{{ path('app_bon_livraison_edit', {'id': bon_livraison.id}) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Modifier
-            </a>
+        <div class="text-end">
+            {% if bon_livraison.status == 'CANCELLED' %}
+                <span class="badge bg-danger fs-6">Annule</span>
+            {% elseif bon_livraison.status == 'VALIDATED' %}
+                <span class="badge bg-success fs-6">Valide</span>
+            {% else %}
+                <span class="badge bg-warning text-dark fs-6">Brouillon</span>
             {% endif %}
-            {% if not bon_livraison.isInvoiced() and bon_livraison.status != 'CANCELLED' %}
-            <form method="post" action="{{ path('app_bon_livraison_cancel', {'id': bon_livraison.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr d\'annuler ce bon de livraison ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ bon_livraison.id) }}">
-                <button type="submit" class="btn btn-danger">
-                    <i class="fas fa-ban"></i> Annuler
-                </button>
-            </form>
+            {% if bon_livraison.isInvoiced() %}
+                <div class="small text-muted mt-1">Facture</div>
+            {% endif %}
+            {% if bon_livraison.cancelledAt %}
+                <div class="small text-muted mt-1">Annule le {{ bon_livraison.cancelledAt|date('d/m/Y H:i') }}</div>
             {% endif %}
         </div>
     </div>
@@ -102,11 +97,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="text-muted">Client</label>
-                        <p class="mb-0"><strong>{{ bon_livraison.bonCommande.client.name }}</strong></p>
+                        <p class="mb-0"><strong>{{ bon_livraison.bonCommande.clientSnapshot.name|default(bon_livraison.bonCommande.client ? bon_livraison.bonCommande.client.name : '-') }}</strong></p>
                     </div>
                     <div class="mb-3">
                         <label class="text-muted">Code Client</label>
-                        <p class="mb-0"><strong>{{ bon_livraison.bonCommande.client.client_code }}</strong></p>
+                        <p class="mb-0"><strong>{{ bon_livraison.bonCommande.clientSnapshot.client_code|default(bon_livraison.bonCommande.client ? bon_livraison.bonCommande.client.clientCode : '-') }}</strong></p>
                     </div>
                     {% if bon_livraison.facture %}
                     <div>
@@ -124,7 +119,7 @@
     </div>
 
     <!-- Delivery Items Table -->
-    <div class="card">
+    <div class="card mb-4">
         <div class="card-header bg-light">
             <h5 class="card-title mb-0">Articles livrés</h5>
         </div>
@@ -155,5 +150,44 @@
             </table>
         </div>
     </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour a la liste
+            </a>
+
+            {% if bon_livraison.canBeEdited() %}
+                <a href="{{ path('app_bon_livraison_edit', {'id': bon_livraison.id}) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Modifier
+                </a>
+            {% endif %}
+
+            {% if bon_livraison.status == 'DRAFT' and not bon_livraison.isInvoiced() %}
+                <form method="post" action="{{ path('app_bon_livraison_confirm', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Confirmer ce bon de livraison ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('confirm' ~ bon_livraison.id) }}">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Confirmer la livraison
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if not bon_livraison.isInvoiced() and bon_livraison.status != 'CANCELLED' %}
+                <form method="post" action="{{ path('app_bon_livraison_cancel', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Confirmer l\'annulation logique de ce bon de livraison ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ bon_livraison.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') and not bon_livraison.isInvoiced() %}
+                <form method="post" action="{{ path('app_bon_livraison_delete', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de livraison ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ bon_livraison.id) }}">
+                    <button type="submit" class="btn btn-dark">
+                        <i class="bi bi-trash"></i> Supprimer physiquement (Admin)
+                    </button>
+                </form>
+            {% endif %}
+        </div>
 </div>
 {% endblock %}

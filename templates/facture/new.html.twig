@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle facture{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-receipt"></i> Creer une facture</h1>
+        <a href="{{ path('app_facture_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour a la liste
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Parametres de facturation</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="facture-create-form">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="tva_rate" class="form-label">Taux TVA (%)</label>
+                        <input
+                            type="number"
+                            id="tva_rate"
+                            name="tva_rate"
+                            class="form-control"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            value="{{ default_tva_rate }}"
+                            required
+                        >
+                    </div>
+                    <div class="col-md-8 d-flex align-items-end">
+                        <div class="form-text">
+                            Timbre fiscal applique automatiquement: <strong>1.000 TND</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 42px;"></th>
+                                <th>Bon de livraison</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th class="text-center">Lignes</th>
+                                <th class="text-end">Total HT estimatif</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for delivery in available_deliveries %}
+                                {% set deliveryOrder = delivery.bonCommande %}
+                                {% set deliveryClient = deliveryOrder.client %}
+                                {% set deliveryClientId = deliveryOrder.clientSnapshot.id|default(deliveryClient ? deliveryClient.id : 0) %}
+                                {% set deliveryClientName = deliveryOrder.clientSnapshot.name|default(deliveryClient ? deliveryClient.name : '-') %}
+                                {% set deliveryClientCode = deliveryOrder.clientSnapshot.client_code|default(deliveryClient ? deliveryClient.clientCode : '-') %}
+                                {% set estimate = 0 %}
+                                {% for item in delivery.bonLivraisonItems %}
+                                    {% set estimate = estimate + (item.quantityDelivered * item.bonCommandeItem.unitPriceSnapshot) %}
+                                {% endfor %}
+                                <tr>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input delivery-check"
+                                            name="delivery_notes[]"
+                                            value="{{ delivery.id }}"
+                                            data-client-id="{{ deliveryClientId }}"
+                                            data-client-name="{{ deliveryClientName }}"
+                                        >
+                                    </td>
+                                    <td><strong>{{ delivery.reference }}</strong></td>
+                                    <td>
+                                        {{ deliveryClientName }}
+                                        <br>
+                                        <small class="text-muted">{{ deliveryClientCode }}</small>
+                                    </td>
+                                    <td>{{ delivery.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td class="text-center">{{ delivery.bonLivraisonItems|length }}</td>
+                                    <td class="text-end">{{ estimate|number_format(3, '.', ' ') }} TND</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        Aucun bon de livraison eligible a la facturation.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary" {% if available_deliveries|length == 0 %}disabled{% endif %}>
+                        <i class="bi bi-check2-square"></i> Generer la facture
+                    </button>
+                    <a href="{{ path('app_facture_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checks = document.querySelectorAll('.delivery-check');
+
+    checks.forEach(function (check) {
+        check.addEventListener('change', function () {
+            const checked = Array.from(checks).filter(c => c.checked);
+            if (checked.length <= 1) {
+                return;
+            }
+
+            const firstClientId = checked[0].dataset.clientId;
+            const sameClient = checked.every(c => c.dataset.clientId === firstClientId);
+
+            if (!sameClient) {
+                this.checked = false;
+                alert('Vous devez selectionner des bons de livraison du meme client.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

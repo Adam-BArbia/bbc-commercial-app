@@ -52,6 +52,12 @@ class Facture
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $cancelled_at = null;
 
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $client_snapshot = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $delivery_snapshot = null;
+
     /**
      * @var Collection<int, FactureItem>
      */
@@ -190,6 +196,28 @@ class Facture
     public function setCancelledAt(?\DateTimeInterface $cancelled_at): static
     {
         $this->cancelled_at = $cancelled_at;
+        return $this;
+    }
+
+    public function getClientSnapshot(): ?array
+    {
+        return $this->client_snapshot;
+    }
+
+    public function setClientSnapshot(?array $client_snapshot): static
+    {
+        $this->client_snapshot = $client_snapshot;
+        return $this;
+    }
+
+    public function getDeliverySnapshot(): ?array
+    {
+        return $this->delivery_snapshot;
+    }
+
+    public function setDeliverySnapshot(?array $delivery_snapshot): static
+    {
+        $this->delivery_snapshot = $delivery_snapshot;
         return $this;
     }
 

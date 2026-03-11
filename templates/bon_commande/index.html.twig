@@ -65,12 +65,14 @@
                         </thead>
                         <tbody>
                             {% for order in orders %}
+                                {% set clientName = order.clientSnapshot.name|default(order.client ? order.client.name : '-') %}
+                                {% set clientCode = order.clientSnapshot.client_code|default(order.client ? order.client.clientCode : '-') %}
                                 <tr>
                                     <td><strong>{{ order.reference }}</strong></td>
                                     <td>
-                                        {{ order.client.name }}
+                                        {{ clientName }}
                                         <br>
-                                        <small class="text-muted">{{ order.client.clientCode }}</small>
+                                        <small class="text-muted">{{ clientCode }}</small>
                                     </td>
                                     <td>{{ order.createdAt|date('d/m/Y H:i') }}</td>
                                     <td class="text-center">{{ order.bonCommandeItems|length }}</td>

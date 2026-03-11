@@ -115,7 +115,7 @@
                                 <li><a class="dropdown-item" href="{{ path('app_bon_livraison_index') }}">Bons de livraison</a></li>
                                 {% endif %}
                                 {% if has_privilege('INVOICE_VIEW') %}
-                                <li><a class="dropdown-item" href="#">Factures</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_facture_index') }}">Factures</a></li>
                                 {% endif %}
                                 {% if has_privilege('PAYMENT_VIEW') %}
                                 <li><a class="dropdown-item" href="#">Paiements</a></li>

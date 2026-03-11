@@ -75,7 +75,7 @@ class BonCommandeController extends AbstractController
                 $form->addError(new FormError('Ajoutez au moins une ligne a la commande.'));
             } else {
                 $order->setReference($this->generateOrderReference($documentCounterRepository, $entityManager));
-                $order->setStatus('CONFIRMED');
+                $order->setStatus('DRAFT');
                 $order->setCreatedBy($this->getUser());
                 $order->setClientSnapshot($this->buildClientSnapshot($order->getClient()));
 
