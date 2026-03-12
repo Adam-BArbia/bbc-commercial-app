@@ -225,20 +225,20 @@
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('app_dashboard') }}">
-                                <i class="bi bi-house"></i> Tableau de bord
+                                <i class="bi bi-house"></i> {{ 'nav.dashboard'|trans }}
                             </a>
                         </li>
                         {% if has_privilege('CLIENT_VIEW') or has_privilege('ARTICLE_VIEW') %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-folder"></i> Gestion
+                                <i class="bi bi-folder"></i> {{ 'nav.management'|trans }}
                             </a>
                             <ul class="dropdown-menu">
                                 {% if has_privilege('CLIENT_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_client_index') }}"><i class="bi bi-people"></i> Clients</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_client_index') }}"><i class="bi bi-people"></i> {{ 'nav.clients'|trans }}</a></li>
                                 {% endif %}
                                 {% if has_privilege('ARTICLE_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_article_index') }}"><i class="bi bi-box-seam"></i> Articles</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_article_index') }}"><i class="bi bi-box-seam"></i> {{ 'nav.articles'|trans }}</a></li>
                                 {% endif %}
                             </ul>
                         </li>
@@ -246,23 +246,23 @@
                         {% if has_privilege('ORDER_VIEW') or has_privilege('DELIVERY_VIEW') or has_privilege('INVOICE_VIEW') or has_privilege('PAYMENT_VIEW') %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-cart"></i> Commercial
+                                <i class="bi bi-cart"></i> {{ 'nav.commercial'|trans }}
                             </a>
                             <ul class="dropdown-menu">
                                 {% if has_privilege('ORDER_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_bon_commande_index') }}">Bons de commande</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_bon_commande_index') }}">{{ 'nav.orders'|trans }}</a></li>
                                 {% endif %}
                                 {% if has_privilege('DELIVERY_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_bon_livraison_index') }}">Bons de livraison</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_bon_livraison_index') }}">{{ 'nav.deliveries'|trans }}</a></li>
                                 {% endif %}
                                 {% if has_privilege('INVOICE_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_facture_index') }}">Factures</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_facture_index') }}">{{ 'nav.invoices'|trans }}</a></li>
                                 {% endif %}
                                 {% if has_privilege('PAYMENT_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_payment_index') }}">Paiements</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_payment_index') }}">{{ 'nav.payments'|trans }}</a></li>
                                 {% endif %}
                                 {% if has_privilege('AUDIT_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">Journal d'audit</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">{{ 'nav.audit'|trans }}</a></li>
                                 {% endif %}
                             </ul>
                         </li>
@@ -270,20 +270,44 @@
                         {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-gear"></i> Administration
+                                <i class="bi bi-gear"></i> {{ 'nav.admin'|trans }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ path('admin_user_index') }}">Utilisateurs</a></li>
-                                <li><a class="dropdown-item" href="{{ path('admin_role_index') }}">Rôles</a></li>
+                                <li><a class="dropdown-item" href="{{ path('admin_user_index') }}">{{ 'nav.users'|trans }}</a></li>
+                                <li><a class="dropdown-item" href="{{ path('admin_role_index') }}">{{ 'nav.roles'|trans }}</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 {% if has_privilege('AUDIT_VIEW') %}
-                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">Journal d'audit</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">{{ 'nav.audit'|trans }}</a></li>
                                 {% endif %}
                             </ul>
                         </li>
                         {% endif %}
                     </ul>
                     <ul class="navbar-nav">
+                        {# Language switcher #}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle px-2" href="#" role="button" data-bs-toggle="dropdown" title="{{ 'nav.language'|trans }}">
+                                {% if app.request.locale == 'en' %}
+                                    🇬🇧 EN
+                                {% else %}
+                                    🇫🇷 FR
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item {% if app.request.locale == 'fr' %}active{% endif %}"
+                                       href="{{ path('app_switch_locale', {locale: 'fr'}) }}">
+                                        🇫🇷 Français
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {% if app.request.locale == 'en' %}active{% endif %}"
+                                       href="{{ path('app_switch_locale', {locale: 'en'}) }}">
+                                        🇬🇧 English
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="nav-item">
                             <button class="nav-link btn btn-link theme-toggle" id="themeToggle" title="Changer le thème">
                                 <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
@@ -294,11 +318,11 @@
                                 <i class="bi bi-person-circle"></i> {{ app.user.name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Mon profil</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_profile_change_password') }}">Changer mot de passe</a></li>
+                                <li><a class="dropdown-item" href="#">{{ 'nav.profile'|trans }}</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_profile_change_password') }}">{{ 'nav.change_password'|trans }}</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ path('app_logout') }}">
-                                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                                    <i class="bi bi-box-arrow-right"></i> {{ 'nav.logout'|trans }}
                                 </a></li>
                             </ul>
                         </li>

@@ -1,27 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ bon_livraison.reference }} - Bon de livraison - BBC Commercial{% endblock %}
+{% block title %}{{ bon_livraison.reference }} - {{ 'delivery.title'|trans }} - BBC Commercial{% endblock %}
 
 {% block body %}
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h1 class="mb-1"><i class="bi bi-truck"></i> {{ bon_livraison.reference }}</h1>
-            <div class="text-muted">Cree le {{ bon_livraison.createdAt|date('d/m/Y H:i') }}</div>
+            <div class="text-muted">{{ 'order.show_created_at'|trans }} {{ bon_livraison.createdAt|date('d/m/Y H:i') }}</div>
         </div>
         <div class="text-end">
             {% if bon_livraison.status == 'CANCELLED' %}
-                <span class="badge bg-danger fs-6">Annule</span>
+                <span class="badge bg-danger fs-6">{{ 'status.cancelled'|trans }}</span>
             {% elseif bon_livraison.status == 'VALIDATED' %}
-                <span class="badge bg-success fs-6">Valide</span>
+                <span class="badge bg-success fs-6">{{ 'status.validated'|trans }}</span>
             {% else %}
-                <span class="badge bg-warning text-dark fs-6">Brouillon</span>
+                <span class="badge bg-warning text-dark fs-6">{{ 'status.draft'|trans }}</span>
             {% endif %}
             {% if bon_livraison.isInvoiced() %}
-                <div class="small text-muted mt-1">Facture</div>
+                <div class="small text-muted mt-1">{{ 'delivery.invoiced'|trans }}</div>
             {% endif %}
             {% if bon_livraison.cancelledAt %}
-                <div class="small text-muted mt-1">Annule le {{ bon_livraison.cancelledAt|date('d/m/Y H:i') }}</div>
+                <div class="small text-muted mt-1">{{ 'status.cancelled'|trans }} {{ bon_livraison.cancelledAt|date('d/m/Y H:i') }}</div>
             {% endif %}
         </div>
     </div>
@@ -31,48 +31,49 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Informations</h5>
+                    <h5 class="card-title mb-0">{{ 'delivery.info_section'|trans }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label class="text-muted">Statut</label>
+                            <label class="text-muted">{{ 'common.status'|trans }}</label>
                             <p class="mb-0"><strong>
                                 <span class="badge 
                                     {% if bon_livraison.status == 'DRAFT' %}bg-warning
                                     {% elseif bon_livraison.status == 'VALIDATED' %}bg-success
                                     {% elseif bon_livraison.status == 'CANCELLED' %}bg-danger{% endif %}">
-                                    {{ bon_livraison.status == 'DRAFT' ? 'Brouillon' : 
-                                       bon_livraison.status == 'VALIDATED' ? 'Validé' : 
-                                       bon_livraison.status == 'CANCELLED' ? 'Annulé' : bon_livraison.status }}
+                                    {% if bon_livraison.status == 'DRAFT' %}{{ 'status.draft'|trans }}
+                                    {% elseif bon_livraison.status == 'VALIDATED' %}{{ 'status.validated'|trans }}
+                                    {% elseif bon_livraison.status == 'CANCELLED' %}{{ 'status.cancelled'|trans }}
+                                    {% else %}{{ bon_livraison.status }}{% endif %}
                                 </span>
                             </strong></p>
                         </div>
                         <div class="col-6">
-                            <label class="text-muted">Facturé</label>
+                            <label class="text-muted">{{ 'delivery.invoiced'|trans }}</label>
                             <p class="mb-0"><strong>
                                 {% if bon_livraison.isInvoiced() %}
-                                    <span class="badge bg-success">Oui</span>
+                                    <span class="badge bg-success">{{ 'common.yes'|trans }}</span>
                                 {% else %}
-                                    <span class="badge bg-secondary">Non</span>
+                                    <span class="badge bg-secondary">{{ 'common.no'|trans }}</span>
                                 {% endif %}
                             </strong></p>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label class="text-muted">Créé par</label>
+                            <label class="text-muted">{{ 'delivery.created_by'|trans }}</label>
                             <p class="mb-0"><strong>{{ bon_livraison.createdBy.name }}</strong></p>
                         </div>
                         <div class="col-6">
-                            <label class="text-muted">Date de création</label>
+                            <label class="text-muted">{{ 'delivery.col_date'|trans }}</label>
                             <p class="mb-0"><strong>{{ bon_livraison.createdAt|date('d/m/Y H:i') }}</strong></p>
                         </div>
                     </div>
                     {% if bon_livraison.cancelledAt %}
                     <div class="row">
                         <div class="col-12">
-                            <label class="text-muted">Date d'annulation</label>
+                            <label class="text-muted">{{ 'status.cancelled'|trans }}</label>
                             <p class="mb-0"><strong>{{ bon_livraison.cancelledAt|date('d/m/Y H:i') }}</strong></p>
                         </div>
                     </div>
@@ -84,11 +85,11 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">Bon de commande</h5>
+                    <h5 class="card-title mb-0">{{ 'delivery.order_section'|trans }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="text-muted">Référence</label>
+                        <label class="text-muted">{{ 'common.reference'|trans }}</label>
                         <p class="mb-0">
                             <a href="{{ path('app_bon_commande_show', {'id': bon_livraison.bonCommande.id}) }}" class="text-decoration-none">
                                 <strong>{{ bon_livraison.bonCommande.reference }}</strong>
@@ -96,16 +97,16 @@
                         </p>
                     </div>
                     <div class="mb-3">
-                        <label class="text-muted">Client</label>
+                        <label class="text-muted">{{ 'common.client'|trans }}</label>
                         <p class="mb-0"><strong>{{ bon_livraison.bonCommande.clientSnapshot.name|default(bon_livraison.bonCommande.client ? bon_livraison.bonCommande.client.name : '-') }}</strong></p>
                     </div>
                     <div class="mb-3">
-                        <label class="text-muted">Code Client</label>
+                        <label class="text-muted">{{ 'common.code'|trans }}</label>
                         <p class="mb-0"><strong>{{ bon_livraison.bonCommande.clientSnapshot.client_code|default(bon_livraison.bonCommande.client ? bon_livraison.bonCommande.client.clientCode : '-') }}</strong></p>
                     </div>
                     {% if bon_livraison.facture %}
                     <div>
-                        <label class="text-muted">Facture</label>
+                        <label class="text-muted">{{ 'nav.invoices'|trans }}</label>
                         <p class="mb-0">
                             <a href="{{ path('app_facture_show', {'id': bon_livraison.facture.id}) }}" class="text-decoration-none">
                                 <strong>{{ bon_livraison.facture.reference }}</strong>
@@ -121,17 +122,17 @@
     <!-- Delivery Items Table -->
     <div class="card mb-4">
         <div class="card-header bg-light">
-            <h5 class="card-title mb-0">Articles livrés</h5>
+            <h5 class="card-title mb-0">{{ 'delivery.items_section'|trans }}</h5>
         </div>
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Article</th>
-                        <th class="text-center">Commandé</th>
-                        <th class="text-center">Livré (ce bon)</th>
-                        <th class="text-end">Prix unitaire</th>
-                        <th class="text-end">Total</th>
+                        <th>{{ 'nav.articles'|trans }}</th>
+                        <th class="text-center">{{ 'delivery.col_ordered'|trans }}</th>
+                        <th class="text-center">{{ 'delivery.col_delivered'|trans }}</th>
+                        <th class="text-end">{{ 'common.unit_price'|trans }}</th>
+                        <th class="text-end">{{ 'common.total'|trans }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,38 +154,38 @@
 
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Retour a la liste
+                <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
             </a>
 
             {% if bon_livraison.canBeEdited() %}
                 <a href="{{ path('app_bon_livraison_edit', {'id': bon_livraison.id}) }}" class="btn btn-primary">
-                    <i class="bi bi-pencil"></i> Modifier
+                    <i class="bi bi-pencil"></i> {{ 'common.edit'|trans }}
                 </a>
             {% endif %}
 
             {% if bon_livraison.status == 'DRAFT' and not bon_livraison.isInvoiced() %}
-                <form method="post" action="{{ path('app_bon_livraison_confirm', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Confirmer ce bon de livraison ?');">
+                <form method="post" action="{{ path('app_bon_livraison_confirm', {'id': bon_livraison.id}) }}" onsubmit="return confirm('{{ 'delivery.confirm_delivery'|trans }}');">
                     <input type="hidden" name="_token" value="{{ csrf_token('confirm' ~ bon_livraison.id) }}">
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Confirmer la livraison
+                        <i class="bi bi-check-circle"></i> {{ 'delivery.confirm_delivery_btn'|trans }}
                     </button>
                 </form>
             {% endif %}
 
             {% if not bon_livraison.isInvoiced() and bon_livraison.status != 'CANCELLED' %}
-                <form method="post" action="{{ path('app_bon_livraison_cancel', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Confirmer l\'annulation logique de ce bon de livraison ?');">
+                <form method="post" action="{{ path('app_bon_livraison_cancel', {'id': bon_livraison.id}) }}" onsubmit="return confirm('{{ 'delivery.confirm_cancel'|trans }}');">
                     <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ bon_livraison.id) }}">
                     <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle"></i> Annuler
+                        <i class="bi bi-x-circle"></i> {{ 'common.cancel'|trans }}
                     </button>
                 </form>
             {% endif %}
 
             {% if is_granted('ROLE_ADMIN') and not bon_livraison.isInvoiced() %}
-                <form method="post" action="{{ path('app_bon_livraison_delete', {'id': bon_livraison.id}) }}" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de livraison ?');">
+                <form method="post" action="{{ path('app_bon_livraison_delete', {'id': bon_livraison.id}) }}" onsubmit="return confirm('{{ 'delivery.confirm_delete'|trans }}');">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ bon_livraison.id) }}">
                     <button type="submit" class="btn btn-dark">
-                        <i class="bi bi-trash"></i> Supprimer physiquement (Admin)
+                        <i class="bi bi-trash"></i> {{ 'delivery.delete_admin'|trans }}
                     </button>
                 </form>
             {% endif %}

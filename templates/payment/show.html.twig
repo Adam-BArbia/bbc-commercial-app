@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Paiement #{{ payment.id }}{% endblock %}
+{% block title %}{{ 'payment.show_title'|trans }} #{{ payment.id }}{% endblock %}
 
 {% block body %}
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-credit-card"></i> Paiement #{{ payment.id }}</h1>
+        <h1><i class="bi bi-credit-card"></i> {{ 'payment.show_title'|trans }} #{{ payment.id }}</h1>
         <a href="{{ path('app_payment_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Retour a la liste
+            <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
         </a>
     </div>
 
@@ -15,22 +15,22 @@
         <div class="col-md-6">
             <div class="card h-100">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Informations</h5>
+                    <h5 class="mb-0">{{ 'payment.info_section'|trans }}</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-2"><span class="text-muted">Date:</span> <strong>{{ payment.paymentDate|date('d/m/Y') }}</strong></div>
-                    <div class="mb-2"><span class="text-muted">Methode:</span>
+                    <div class="mb-2"><span class="text-muted">{{ 'payment.date_label'|trans }}:</span> <strong>{{ payment.paymentDate|date('d/m/Y') }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">{{ 'payment.method_label'|trans }}:</span>
                         <strong>
-                            {% if payment.method == 'CASH' %}Especes
-                            {% elseif payment.method == 'CHEQUE' %}Cheque
-                            {% elseif payment.method == 'VIREMENT' %}Virement
-                            {% elseif payment.method == 'CARTE' %}Carte
+                            {% if payment.method == 'CASH' %}{{ 'payment.method_cash'|trans }}
+                            {% elseif payment.method == 'CHEQUE' %}{{ 'payment.method_cheque'|trans }}
+                            {% elseif payment.method == 'VIREMENT' %}{{ 'payment.method_virement'|trans }}
+                            {% elseif payment.method == 'CARTE' %}{{ 'payment.method_carte'|trans }}
                             {% else %}{{ payment.method }}{% endif %}
                         </strong>
                     </div>
-                    <div class="mb-2"><span class="text-muted">Ref interne:</span> <strong>{{ payment.reference ?: '-' }}</strong></div>
-                    <div class="mb-2"><span class="text-muted">Ref externe:</span> <strong>{{ payment.externalReference ?: '-' }}</strong></div>
-                    <div class="mb-2"><span class="text-muted">Saisi par:</span> <strong>{{ payment.createdBy.name }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">{{ 'payment.ref_internal'|trans }}:</span> <strong>{{ payment.reference ?: '-' }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">{{ 'payment.ref_external'|trans }}:</span> <strong>{{ payment.externalReference ?: '-' }}</strong></div>
+                    <div class="mb-2"><span class="text-muted">{{ 'payment.created_by'|trans }}:</span> <strong>{{ payment.createdBy.name }}</strong></div>
                 </div>
             </div>
         </div>
@@ -38,19 +38,19 @@
         <div class="col-md-6">
             <div class="card h-100">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Montants</h5>
+                    <h5 class="mb-0">{{ 'payment.amounts_section'|trans }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Total paiement</span>
+                        <span>{{ 'payment.total_payment'|trans }}</span>
                         <strong>{{ payment.amount|number_format(3, '.', ' ') }} TND</strong>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Total alloue</span>
+                        <span>{{ 'payment.total_allocated'|trans }}</span>
                         <strong>{{ payment.totalAllocated|number_format(3, '.', ' ') }} TND</strong>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span>Reste non alloue</span>
+                        <span>{{ 'payment.unallocated'|trans }}</span>
                         <strong>{{ (payment.amount - payment.totalAllocated)|number_format(3, '.', ' ') }} TND</strong>
                     </div>
                 </div>
@@ -60,17 +60,17 @@
 
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Allocations factures</h5>
+            <h5 class="mb-0">{{ 'payment.alloc_section'|trans }}</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-striped mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Facture</th>
-                            <th class="text-center">Statut</th>
-                            <th class="text-end">Montant alloue</th>
-                            <th class="text-center">Actions</th>
+                            <th>{{ 'payment.col_invoice'|trans }}</th>
+                            <th class="text-center">{{ 'payment.col_status'|trans }}</th>
+                            <th class="text-end">{{ 'payment.col_alloc_amount'|trans }}</th>
+                            <th class="text-center">{{ 'common.actions'|trans }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,27 +79,27 @@
                                 <td><strong>{{ allocation.facture.reference }}</strong></td>
                                 <td class="text-center">
                                     {% if allocation.facture.status == 'PAID' %}
-                                        <span class="badge bg-success">Payee</span>
+                                        <span class="badge bg-success">{{ 'status.paid'|trans }}</span>
                                     {% elseif allocation.facture.status == 'PARTIALLY_PAID' %}
-                                        <span class="badge bg-warning text-dark">Partiellement payee</span>
+                                        <span class="badge bg-warning text-dark">{{ 'status.partially_paid'|trans }}</span>
                                     {% elseif allocation.facture.status == 'UNPAID' %}
-                                        <span class="badge bg-primary">Impayee</span>
+                                        <span class="badge bg-primary">{{ 'status.unpaid'|trans }}</span>
                                     {% elseif allocation.facture.status == 'CANCELLED' %}
-                                        <span class="badge bg-danger">Annulee</span>
+                                        <span class="badge bg-danger">{{ 'status.cancelled'|trans }}</span>
                                     {% else %}
                                         <span class="badge bg-secondary">{{ allocation.facture.status }}</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end">{{ allocation.amountAllocated|number_format(3, '.', ' ') }} TND</td>
                                 <td class="text-center">
-                                    <a href="{{ path('app_facture_show', {'id': allocation.facture.id}) }}" class="btn btn-outline-secondary btn-sm" title="Voir facture">
+                                    <a href="{{ path('app_facture_show', {'id': allocation.facture.id}) }}" class="btn btn-outline-secondary btn-sm" title="{{ 'common.see_all'|trans }}">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">Aucune allocation</td>
+                                <td colspan="4" class="text-center text-muted py-4">{{ 'payment.no_alloc'|trans }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

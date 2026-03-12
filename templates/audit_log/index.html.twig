@@ -1,49 +1,49 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Journal d'audit{% endblock %}
+{% block title %}{{ 'audit.title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-journal-text"></i> Journal d'audit</h1>
+        <h1><i class="bi bi-journal-text"></i> {{ 'audit.title'|trans }}</h1>
     </div>
 
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
-                    <label for="table" class="form-label">Table</label>
+                    <label for="table" class="form-label">{{ 'audit.filter_table'|trans }}</label>
                     <input type="text" id="table" name="table" class="form-control" value="{{ filters.table }}" placeholder="facture, payment, ...">
                 </div>
                 <div class="col-md-2">
-                    <label for="action" class="form-label">Action</label>
+                    <label for="action" class="form-label">{{ 'audit.filter_action'|trans }}</label>
                     <select id="action" name="action" class="form-select">
-                        <option value="" {% if filters.action == '' %}selected{% endif %}>Toutes</option>
+                        <option value="" {% if filters.action == '' %}selected{% endif %}>{{ 'audit.filter_all_actions'|trans }}</option>
                         <option value="CREATE" {% if filters.action == 'CREATE' %}selected{% endif %}>CREATE</option>
                         <option value="UPDATE" {% if filters.action == 'UPDATE' %}selected{% endif %}>UPDATE</option>
                         <option value="DELETE" {% if filters.action == 'DELETE' %}selected{% endif %}>DELETE</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="user" class="form-label">Utilisateur</label>
+                    <label for="user" class="form-label">{{ 'audit.filter_user'|trans }}</label>
                     <select id="user" name="user" class="form-select">
-                        <option value="0" {% if filters.user == 0 %}selected{% endif %}>Tous</option>
+                        <option value="0" {% if filters.user == 0 %}selected{% endif %}>{{ 'audit.filter_all_users'|trans }}</option>
                         {% for user in users %}
                             <option value="{{ user.id }}" {% if filters.user == user.id %}selected{% endif %}>{{ user.name }} ({{ user.email }})</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date_from" class="form-label">Date debut</label>
+                    <label for="date_from" class="form-label">{{ 'common.date_start'|trans }}</label>
                     <input type="date" id="date_from" name="date_from" class="form-control" value="{{ filters.date_from }}">
                 </div>
                 <div class="col-md-2">
-                    <label for="date_to" class="form-label">Date fin</label>
+                    <label for="date_to" class="form-label">{{ 'common.date_end'|trans }}</label>
                     <input type="date" id="date_to" name="date_to" class="form-control" value="{{ filters.date_to }}">
                 </div>
                 <div class="col-12 d-flex gap-2">
-                    <button class="btn btn-secondary" type="submit"><i class="bi bi-search"></i> Filtrer</button>
-                    <a href="{{ path('app_audit_log_index') }}" class="btn btn-outline-secondary">Reinitialiser</a>
+                    <button class="btn btn-secondary" type="submit"><i class="bi bi-search"></i> {{ 'common.filter'|trans }}</button>
+                    <a href="{{ path('app_audit_log_index') }}" class="btn btn-outline-secondary">{{ 'audit.reset'|trans }}</a>
                 </div>
             </form>
         </div>
@@ -51,7 +51,7 @@
 
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Entrees ({{ pagination.total_items }})</h5>
+            <h5 class="mb-0">{{ 'audit.entries'|trans({'%count%': pagination.total_items}) }}</h5>
         </div>
         <div class="card-body p-0">
             {% if logs|length > 0 %}
@@ -59,13 +59,13 @@
                     <table class="table table-striped table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Utilisateur</th>
-                                <th>Table</th>
-                                <th>ID</th>
-                                <th>Action</th>
-                                <th>Anciennes donnees</th>
-                                <th>Nouvelles donnees</th>
+                                <th>{{ 'audit.col_date'|trans }}</th>
+                                <th>{{ 'audit.col_user'|trans }}</th>
+                                <th>{{ 'audit.col_table'|trans }}</th>
+                                <th>{{ 'audit.col_id'|trans }}</th>
+                                <th>{{ 'audit.col_action'|trans }}</th>
+                                <th>{{ 'audit.col_old_data'|trans }}</th>
+                                <th>{{ 'audit.col_new_data'|trans }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,24 +108,24 @@
 
                 {% if pagination.total_pages > 1 %}
                     <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
-                        <small class="text-muted">Page {{ pagination.page }} / {{ pagination.total_pages }}</small>
+                        <small class="text-muted">{{ 'common.page_of'|trans({'%page%': pagination.page, '%total%': pagination.total_pages}) }}</small>
                         <div class="btn-group btn-group-sm">
                             {% if pagination.page > 1 %}
-                                <a class="btn btn-outline-secondary" href="{{ path('app_audit_log_index', app.request.query.all|merge({'page': pagination.page - 1})) }}">Precedent</a>
+                                <a class="btn btn-outline-secondary" href="{{ path('app_audit_log_index', app.request.query.all|merge({'page': pagination.page - 1})) }}">{{ 'common.previous'|trans }}</a>
                             {% else %}
-                                <button class="btn btn-outline-secondary" disabled>Precedent</button>
+                                <button class="btn btn-outline-secondary" disabled>{{ 'common.previous'|trans }}</button>
                             {% endif %}
 
                             {% if pagination.page < pagination.total_pages %}
-                                <a class="btn btn-outline-secondary" href="{{ path('app_audit_log_index', app.request.query.all|merge({'page': pagination.page + 1})) }}">Suivant</a>
+                                <a class="btn btn-outline-secondary" href="{{ path('app_audit_log_index', app.request.query.all|merge({'page': pagination.page + 1})) }}">{{ 'common.next'|trans }}</a>
                             {% else %}
-                                <button class="btn btn-outline-secondary" disabled>Suivant</button>
+                                <button class="btn btn-outline-secondary" disabled>{{ 'common.next'|trans }}</button>
                             {% endif %}
                         </div>
                     </div>
                 {% endif %}
             {% else %}
-                <div class="text-center py-5 text-muted">Aucune entree d'audit</div>
+                <div class="text-center py-5 text-muted">{{ 'audit.no_entries'|trans }}</div>
             {% endif %}
         </div>
     </div>

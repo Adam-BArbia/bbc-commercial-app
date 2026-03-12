@@ -1,40 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord{% endblock %}
+{% block title %}{{ 'dashboard.title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid mt-4">
     <div class="row mb-3">
         <div class="col-12">
             <h1 class="h3 mb-1">
-                <i class="bi bi-speedometer2"></i> Tableau de bord
+                <i class="bi bi-speedometer2"></i> {{ 'dashboard.title'|trans }}
             </h1>
 
             {# Role-specific welcome banner #}
             {% if is_granted('ROLE_ADMIN') %}
             <div class="alert alert-primary border-primary py-2">
                 <i class="bi bi-shield-check"></i>
-                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                {{ 'nav.dashboard'|trans ~ ' — ' }}<strong>{{ app.user.name }}</strong> —
                 <span class="badge bg-primary">{{ app.user.role.name }}</span>
-                <small class="text-muted ms-2">Accès complet à toutes les fonctionnalités.</small>
+                <small class="text-muted ms-2">{{ 'dashboard.welcome_admin'|trans }}</small>
             </div>
             {% elseif is_granted('ROLE_COMMERCIAL') %}
             <div class="alert alert-success border-success py-2">
                 <i class="bi bi-briefcase"></i>
-                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                {{ 'nav.dashboard'|trans ~ ' — ' }}<strong>{{ app.user.name }}</strong> —
                 <span class="badge bg-success">{{ app.user.role.name }}</span>
-                <small class="text-muted ms-2">Gestion clients, articles et flux commercial.</small>
+                <small class="text-muted ms-2">{{ 'dashboard.welcome_commercial'|trans }}</small>
             </div>
             {% elseif is_granted('ROLE_COMPTABLE') %}
             <div class="alert alert-info border-info py-2">
                 <i class="bi bi-calculator"></i>
-                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                {{ 'nav.dashboard'|trans ~ ' — ' }}<strong>{{ app.user.name }}</strong> —
                 <span class="badge bg-info">{{ app.user.role.name }}</span>
-                <small class="text-muted ms-2">Accès en lecture seule aux données commerciales.</small>
+                <small class="text-muted ms-2">{{ 'dashboard.welcome_comptable'|trans }}</small>
             </div>
             {% else %}
             <div class="alert alert-secondary py-2">
-                Bienvenue, <strong>{{ app.user.name }}</strong> —
+                <strong>{{ app.user.name }}</strong> —
                 <span class="badge bg-secondary">{{ app.user.role.name }}</span>
             </div>
             {% endif %}
@@ -50,13 +50,13 @@
                 <div class="card text-white bg-primary h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-white-50 small mb-1">Commandes en cours</div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.orders_in_progress'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ ordersInProgress }}</div>
                         </div>
                         <i class="bi bi-cart3 fs-1 opacity-50"></i>
                     </div>
                     <div class="card-footer bg-white bg-opacity-25 py-1">
-                        <small>Confirmées / partiellement livrées</small>
+                        <small>{{ 'dashboard.orders_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -69,13 +69,13 @@
                 <div class="card text-white bg-success h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-white-50 small mb-1">Livraisons non facturées</div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.deliveries_not_invoiced'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ deliveriesNotInvoiced }}</div>
                         </div>
                         <i class="bi bi-truck fs-1 opacity-50"></i>
                     </div>
                     <div class="card-footer bg-white bg-opacity-25 py-1">
-                        <small>Validées sans facture associée</small>
+                        <small>{{ 'dashboard.deliveries_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -88,13 +88,13 @@
                 <div class="card text-dark bg-warning h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-black-50 small mb-1">Factures impayées</div>
+                            <div class="text-black-50 small mb-1">{{ 'dashboard.invoices_unpaid'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ invoicesUnpaid }}</div>
                         </div>
                         <i class="bi bi-receipt fs-1 opacity-50"></i>
                     </div>
                     <div class="card-footer bg-black bg-opacity-10 py-1">
-                        <small>Impayées ou partiellement payées</small>
+                        <small>{{ 'dashboard.invoices_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -107,13 +107,13 @@
                 <div class="card text-white bg-info h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-white-50 small mb-1">Clients actifs</div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.active_clients'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ activeClients }}</div>
                         </div>
                         <i class="bi bi-people fs-1 opacity-50"></i>
                     </div>
                     <div class="card-footer bg-white bg-opacity-25 py-1">
-                        <small>Comptes clients actifs</small>
+                        <small>{{ 'dashboard.clients_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -130,9 +130,9 @@
         <div class="col-lg-7">
             <div class="card h-100">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0"><i class="bi bi-cart3"></i> Commandes récentes</h6>
+                    <h6 class="mb-0"><i class="bi bi-cart3"></i> {{ 'dashboard.recent_orders'|trans }}</h6>
                     <a href="{{ path('app_bon_commande_index') }}" class="btn btn-sm btn-outline-secondary">
-                        Voir tout
+                        {{ 'common.see_all'|trans }}
                     </a>
                 </div>
                 <div class="card-body p-0">
@@ -141,10 +141,10 @@
                         <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Référence</th>
-                                    <th>Client</th>
-                                    <th>Date</th>
-                                    <th class="text-center">Statut</th>
+                                    <th>{{ 'order.col_reference'|trans }}</th>
+                                    <th>{{ 'common.client'|trans }}</th>
+                                    <th>{{ 'common.date'|trans }}</th>
+                                    <th class="text-center">{{ 'common.status'|trans }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -160,15 +160,15 @@
                                     <td><small>{{ order.createdAt|date('d/m/Y') }}</small></td>
                                     <td class="text-center">
                                         {% if order.status == 'DRAFT' %}
-                                            <span class="badge bg-secondary">Brouillon</span>
+                                            <span class="badge bg-secondary">{{ 'status.draft'|trans }}</span>
                                         {% elseif order.status == 'CONFIRMED' %}
-                                            <span class="badge bg-primary">Confirmée</span>
+                                            <span class="badge bg-primary">{{ 'status.confirmed'|trans }}</span>
                                         {% elseif order.status == 'PARTIALLY_DELIVERED' %}
-                                            <span class="badge bg-warning text-dark">Part. livrée</span>
+                                            <span class="badge bg-warning text-dark">{{ 'status.partially_delivered'|trans }}</span>
                                         {% elseif order.status == 'DELIVERED' %}
-                                            <span class="badge bg-success">Livrée</span>
+                                            <span class="badge bg-success">{{ 'status.delivered'|trans }}</span>
                                         {% elseif order.status == 'CANCELLED' %}
-                                            <span class="badge bg-danger">Annulée</span>
+                                            <span class="badge bg-danger">{{ 'status.cancelled'|trans }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -179,7 +179,7 @@
                     {% else %}
                     <p class="text-muted text-center py-4 mb-0">
                         <i class="bi bi-inbox fs-3 d-block mb-1"></i>
-                        Aucune commande
+                        {{ 'dashboard.no_orders'|trans }}
                     </p>
                     {% endif %}
                 </div>
@@ -194,9 +194,9 @@
             {% if has_privilege('INVOICE_VIEW') %}
             <div class="card mb-3">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0"><i class="bi bi-receipt text-warning"></i> Factures en attente</h6>
+                    <h6 class="mb-0"><i class="bi bi-receipt text-warning"></i> {{ 'dashboard.pending_invoices'|trans }}</h6>
                     <a href="{{ path('app_facture_index', {status: 'UNPAID'}) }}" class="btn btn-sm btn-outline-secondary">
-                        Voir tout
+                        {{ 'common.see_all'|trans }}
                     </a>
                 </div>
                 <div class="card-body p-0">
@@ -205,9 +205,9 @@
                         <table class="table table-sm table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Référence</th>
-                                    <th class="text-end">Total TTC</th>
-                                    <th class="text-center">Statut</th>
+                                    <th>{{ 'invoice.col_reference'|trans }}</th>
+                                    <th class="text-end">{{ 'invoice.col_total_ttc'|trans }}</th>
+                                    <th class="text-center">{{ 'common.status'|trans }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -221,9 +221,9 @@
                                     <td class="text-end">{{ inv.totalTtc|number_format(3, '.', ' ') }}</td>
                                     <td class="text-center">
                                         {% if inv.status == 'UNPAID' %}
-                                            <span class="badge bg-danger">Impayée</span>
+                                            <span class="badge bg-danger">{{ 'status.unpaid'|trans }}</span>
                                         {% else %}
-                                            <span class="badge bg-warning text-dark">Part. payée</span>
+                                            <span class="badge bg-warning text-dark">{{ 'status.partially_paid'|trans }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -234,7 +234,7 @@
                     {% else %}
                     <p class="text-muted text-center py-3 mb-0">
                         <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
-                        <small>Aucune facture en attente</small>
+                        <small>{{ 'dashboard.no_pending_invoices'|trans }}</small>
                     </p>
                     {% endif %}
                 </div>
@@ -244,39 +244,39 @@
             {# Quick actions ─────────── #}
             <div class="card">
                 <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="bi bi-lightning-charge"></i> Actions rapides</h6>
+                    <h6 class="mb-0"><i class="bi bi-lightning-charge"></i> {{ 'dashboard.quick_actions'|trans }}</h6>
                 </div>
                 <div class="card-body">
                     {% if is_granted('ROLE_COMPTABLE') and not is_granted('ROLE_ADMIN') %}
                     <div class="alert alert-info py-2 mb-3">
-                        <small><i class="bi bi-eye"></i> Mode lecture seule — création désactivée</small>
+                        <small><i class="bi bi-eye"></i> {{ 'dashboard.read_only_mode'|trans }}</small>
                     </div>
                     {% endif %}
 
                     <div class="d-grid gap-2">
                         {% if has_privilege('ORDER_CREATE') %}
                         <a href="{{ path('app_bon_commande_new') }}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nouveau bon de commande
+                            <i class="bi bi-plus-circle"></i> {{ 'dashboard.new_order'|trans }}
                         </a>
                         {% endif %}
                         {% if has_privilege('DELIVERY_CREATE') %}
                         <a href="{{ path('app_bon_livraison_new') }}" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nouveau bon de livraison
+                            <i class="bi bi-plus-circle"></i> {{ 'dashboard.new_delivery'|trans }}
                         </a>
                         {% endif %}
                         {% if has_privilege('INVOICE_CREATE') %}
                         <a href="{{ path('app_facture_new') }}" class="btn btn-outline-warning btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nouvelle facture
+                            <i class="bi bi-plus-circle"></i> {{ 'dashboard.new_invoice'|trans }}
                         </a>
                         {% endif %}
                         {% if has_privilege('PAYMENT_CREATE') %}
                         <a href="{{ path('app_payment_new') }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nouveau paiement
+                            <i class="bi bi-plus-circle"></i> {{ 'dashboard.new_payment'|trans }}
                         </a>
                         {% endif %}
                         {% if has_privilege('CLIENT_CREATE') %}
                         <a href="{{ path('app_client_new') }}" class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-plus-circle"></i> Nouveau client
+                            <i class="bi bi-plus-circle"></i> {{ 'dashboard.new_client'|trans }}
                         </a>
                         {% endif %}
                     </div>
@@ -293,7 +293,7 @@
             <div class="card">
                 <div class="card-header bg-light">
                     <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#privilegesCollapse" role="button">
-                        <i class="bi bi-key"></i> Vos privilèges ({{ user_privileges()|length }})
+                        <i class="bi bi-key"></i> {{ 'dashboard.privileges_count'|trans({'%count%': user_privileges()|length}) }}
                         <i class="bi bi-chevron-down float-end"></i>
                     </a>
                 </div>
@@ -311,7 +311,7 @@
                                     </div>
                                 {% endfor %}
                             {% else %}
-                                <p class="text-muted mb-0">Aucun privilège assigné</p>
+                                <p class="text-muted mb-0">{{ 'common.no_privileges'|trans }}</p>
                             {% endif %}
                         </div>
                     </div>

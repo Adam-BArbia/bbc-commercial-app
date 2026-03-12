@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Connexion - BBC Commercial{% endblock %}
+{% block title %}{{ 'security.login_title'|trans }} - BBC Commercial{% endblock %}
 
 {% block body %}
 <div class="container">
@@ -14,7 +14,7 @@
                             <br>
                             BBC Commercial
                         </h1>
-                        <p class="text-muted">Système de gestion commerciale</p>
+                        <p class="text-muted">{{ 'security.system_title'|trans }}</p>
                     </div>
 
                     {% if error %}
@@ -27,7 +27,7 @@
                     <form method="post">
                         <div class="mb-3">
                             <label for="inputEmail" class="form-label">
-                                <i class="bi bi-envelope"></i> Adresse email
+                                <i class="bi bi-envelope"></i> {{ 'security.email'|trans }}
                             </label>
                             <input type="email" 
                                    value="{{ last_username }}" 
@@ -41,7 +41,7 @@
 
                         <div class="mb-3">
                             <label for="inputPassword" class="form-label">
-                                <i class="bi bi-lock"></i> Mot de passe
+                                <i class="bi bi-lock"></i> {{ 'security.password'|trans }}
                             </label>
                             <input type="password" 
                                    name="_password" 
@@ -56,13 +56,13 @@
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="remember_me" name="_remember_me">
                             <label class="form-check-label" for="remember_me">
-                                Se souvenir de moi
+                                {{ 'security.remember_me'|trans }}
                             </label>
                         </div>
 
                         <div class="d-grid">
                             <button class="btn btn-primary btn-lg" type="submit">
-                                <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                                <i class="bi bi-box-arrow-in-right"></i> {{ 'security.submit'|trans }}
                             </button>
                         </div>
                     </form>
@@ -71,7 +71,7 @@
 
             <div class="text-center mt-3">
                 <small class="text-muted">
-                    © {{ 'now'|date('Y') }} BBC Commercial - Tous droits réservés
+                    © {{ 'now'|date('Y') }} BBC Commercial - {{ 'security.copyright'|trans }}
                 </small>
             </div>
         </div>

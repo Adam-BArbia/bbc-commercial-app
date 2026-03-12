@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer un bon de livraison - BBC Commercial{% endblock %}
+{% block title %}{{ 'delivery.new'|trans }} - BBC Commercial{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h1 class="h3 mb-4">
-                <i class="fas fa-plus-circle"></i> Créer un bon de livraison
+                <i class="fas fa-plus-circle"></i> {{ 'delivery.new'|trans }}
             </h1>
 
             <div class="card">
@@ -16,7 +16,7 @@
                         <!-- Bon de Commande Selection -->
                         <div class="mb-3">
                             <label for="{{ form.bon_commande.vars.id }}" class="form-label">
-                                Bon de commande <span class="text-danger">*</span>
+                                {{ 'nav.orders'|trans }} <span class="text-danger">*</span>
                             </label>
                             {{ form_widget(form.bon_commande, {'attr': {'class': 'form-select'}}) }}
                             {{ form_errors(form.bon_commande) }}
@@ -37,11 +37,11 @@
                             <table class="table table-sm table-bordered">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Article</th>
-                                        <th>Commandé</th>
-                                        <th>Livré</th>
-                                        <th>Restant</th>
-                                        <th>À livrer</th>
+                                <td>{{ 'nav.articles'|trans }}</td>
+                                        <th>{{ 'order.col_lines'|trans }}</th>
+                                        <th>{{ 'status.delivered'|trans }}</th>
+                                        <th>{{ 'common.no_results'|trans }}</th>
+                                        <th>{{ 'common.quantity'|trans }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="order-items-body">
@@ -58,11 +58,11 @@
                         <div class="form-text mt-2" id="delivery-hint">Sélectionnez une commande puis renseignez les quantités à livrer.</div>
                     {{ form_end(form) }}
 
-                    <div class="mt-3">
-                        <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Annuler
-                        </a>
-                    </div>
+                        <div class="mt-3">
+                            <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> {{ 'common.cancel'|trans }}
+                            </a>
+                        </div>
                 </div>
             </div>
         </div>

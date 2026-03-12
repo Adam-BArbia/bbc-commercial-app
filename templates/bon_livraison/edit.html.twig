@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ bon_livraison.reference }} - BBC Commercial{% endblock %}
+{% block title %}{{ 'delivery.edit_title'|trans }} {{ bon_livraison.reference }}{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h1 class="h3 mb-4">
-                <i class="fas fa-edit"></i> Modifier {{ bon_livraison.reference }}
+                <i class="fas fa-edit"></i> {{ 'delivery.edit_title'|trans }} {{ bon_livraison.reference }}
             </h1>
 
             <div class="card">
@@ -15,21 +15,21 @@
                     <form method="post" id="edit-form">
                         <!-- Order Info (Read-only) -->
                         <div class="alert alert-info">
-                            <strong>Bon de commande:</strong> {{ bon_commande.reference }} - 
-                            <strong>Client:</strong> {{ bon_commande.clientSnapshot.name|default(bon_commande.client ? bon_commande.client.name : '-') }}
+                            <strong>{{ 'delivery.order_info'|trans }}:</strong> {{ bon_commande.reference }} - 
+                            <strong>{{ 'invoice.label_client'|trans }}:</strong> {{ bon_commande.clientSnapshot.name|default(bon_commande.client ? bon_commande.client.name : '-') }}
                         </div>
 
                         <!-- Delivery Items Table -->
-                        <h5 class="mb-3">Articles à livrer</h5>
+                        <h5 class="mb-3">{{ 'delivery.items_to_deliver'|trans }}</h5>
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Article</th>
-                                        <th class="text-center">Commandé</th>
-                                        <th class="text-center">Déjà livré</th>
-                                        <th class="text-center">Restant</th>
-                                        <th class="text-center">À livrer (ce bon)</th>
+                                        <th>{{ 'delivery.col_article'|trans }}</th>
+                                        <th class="text-center">{{ 'delivery.col_ordered'|trans }}</th>
+                                        <th class="text-center">{{ 'delivery.col_already_delivered'|trans }}</th>
+                                        <th class="text-center">{{ 'delivery.col_remaining'|trans }}</th>
+                                        <th class="text-center">{{ 'delivery.col_to_deliver'|trans }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -62,10 +62,10 @@
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Enregistrer
+                                <i class="fas fa-save"></i> {{ 'delivery.save_btn'|trans }}
                             </button>
                             <a href="{{ path('app_bon_livraison_show', {'id': bon_livraison.id}) }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
+                                <i class="fas fa-times"></i> {{ 'common.cancel'|trans }}
                             </a>
                         </div>
                     </form>

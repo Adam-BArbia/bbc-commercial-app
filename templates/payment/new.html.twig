@@ -1,66 +1,66 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau paiement{% endblock %}
+{% block title %}{{ 'payment.new'|trans }}{% endblock %}
 
 {% block body %}
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-credit-card-2-front"></i> Enregistrer un paiement</h1>
+        <h1><i class="bi bi-credit-card-2-front"></i> {{ 'payment.register'|trans }}</h1>
         <a href="{{ path('app_payment_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Retour a la liste
+            <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
         </a>
     </div>
 
     <div class="card mb-4">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Informations paiement</h5>
+            <h5 class="mb-0">{{ 'payment.info_section'|trans }}</h5>
         </div>
         <div class="card-body">
             <form method="post" id="payment-form">
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <label for="payment_date" class="form-label">Date de paiement</label>
+                        <label for="payment_date" class="form-label">{{ 'payment.date_label'|trans }}</label>
                         <input type="date" id="payment_date" name="payment_date" class="form-control" value="{{ 'now'|date('Y-m-d') }}" required>
                     </div>
                     <div class="col-md-3">
-                        <label for="method" class="form-label">Methode</label>
+                        <label for="method" class="form-label">{{ 'payment.method_label'|trans }}</label>
                         <select id="method" name="method" class="form-select" required>
-                            <option value="">Selectionner...</option>
+                            <option value="">{{ 'payment.select_method'|trans }}</option>
                             {% for code in methodChoices %}
                                 <option value="{{ code }}">
-                                    {% if code == 'CASH' %}Especes
-                                    {% elseif code == 'CHEQUE' %}Cheque
-                                    {% elseif code == 'VIREMENT' %}Virement
-                                    {% elseif code == 'CARTE' %}Carte
+                                    {% if code == 'CASH' %}{{ 'payment.method_cash'|trans }}
+                                    {% elseif code == 'CHEQUE' %}{{ 'payment.method_cheque'|trans }}
+                                    {% elseif code == 'VIREMENT' %}{{ 'payment.method_virement'|trans }}
+                                    {% elseif code == 'CARTE' %}{{ 'payment.method_carte'|trans }}
                                     {% else %}{{ code }}{% endif %}
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="external_reference" class="form-label">Reference externe (optionnel)</label>
-                        <input type="text" id="external_reference" name="external_reference" class="form-control" placeholder="Ex: No cheque / ref virement">
+                        <label for="external_reference" class="form-label">{{ 'payment.ext_ref_label'|trans }}</label>
+                        <input type="text" id="external_reference" name="external_reference" class="form-control" placeholder="{{ 'payment.ext_ref_placeholder'|trans }}">
                     </div>
                     <div class="col-md-3">
-                        <label for="amount" class="form-label">Montant total (TND)</label>
+                        <label for="amount" class="form-label">{{ 'payment.amount_label'|trans }}</label>
                         <input type="number" id="amount" name="amount" class="form-control" min="0.001" step="0.001" required>
                     </div>
                 </div>
 
                 <div class="alert alert-info py-2">
-                    <i class="bi bi-info-circle"></i> La reference interne paiement est generee automatiquement au format <strong>PAY-YYYY-XXXX</strong>.
+                    <i class="bi bi-info-circle"></i> {{ 'payment.auto_ref_info'|trans }}
                 </div>
 
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Facture</th>
-                                <th>Client</th>
-                                <th class="text-end">Total TTC</th>
-                                <th class="text-end">Deja paye</th>
-                                <th class="text-end">Reste a payer</th>
-                                <th class="text-end" style="width: 180px;">Montant alloue</th>
+                                <th>{{ 'payment.col_invoice'|trans }}</th>
+                                <th>{{ 'invoice.label_client'|trans }}</th>
+                                <th class="text-end">{{ 'payment.col_total_ttc'|trans }}</th>
+                                <th class="text-end">{{ 'payment.col_already_paid'|trans }}</th>
+                                <th class="text-end">{{ 'payment.col_remaining'|trans }}</th>
+                                <th class="text-end" style="width: 180px;">{{ 'payment.col_allocation'|trans }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,7 +92,7 @@
                             {% else %}
                                 <tr>
                                     <td colspan="6" class="text-center text-muted py-4">
-                                        Aucune facture eligibile pour paiement.
+                                        {{ 'payment.no_invoices_eligible'|trans }}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -102,13 +102,13 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="text-muted">
-                        Total allocations saisi: <strong id="allocated-total">0.000</strong> TND
+                        {{ 'payment.alloc_total'|trans }}: <strong id="allocated-total">0.000</strong> TND
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary" {% if available_invoices|length == 0 %}disabled{% endif %}>
-                            <i class="bi bi-check2-circle"></i> Enregistrer le paiement
+                            <i class="bi bi-check2-circle"></i> {{ 'payment.save_btn'|trans }}
                         </button>
-                        <a href="{{ path('app_payment_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                        <a href="{{ path('app_payment_index') }}" class="btn btn-outline-secondary">{{ 'common.cancel'|trans }}</a>
                     </div>
                 </div>
             </form>

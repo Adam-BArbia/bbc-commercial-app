@@ -1,18 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Bons de livraison - BBC Commercial{% endblock %}
+{% block title %}{{ 'delivery.title'|trans }} - BBC Commercial{% endblock %}
 
 {% block body %}
 <div class="container-fluid mt-4">
     <div class="row mb-4">
         <div class="col-md-8">
             <h1 class="h3">
-                <i class="fas fa-truck"></i> Bons de livraison
+                <i class="fas fa-truck"></i> {{ 'delivery.title'|trans }}
             </h1>
         </div>
         <div class="col-md-4 text-end">
             <a href="{{ path('app_bon_livraison_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nouveau bon de livraison
+                <i class="fas fa-plus"></i> {{ 'delivery.new'|trans }}
             </a>
         </div>
     </div>
@@ -23,29 +23,29 @@
             <form method="get" class="row g-3">
                 <div class="col-md-4">
                     <input type="text" name="search" class="form-control"
-                        placeholder="Référence, commande ou client..."
+                        placeholder="{{ 'delivery.search_placeholder'|trans }}"
                         value="{{ search_query }}">
                 </div>
                 <div class="col-md-2">
                     <select name="status" class="form-select">
-                        <option value="">--- Tous les statuts ---</option>
-                        <option value="DRAFT" {% if status_filter == 'DRAFT' %}selected{% endif %}>Brouillon</option>
-                        <option value="VALIDATED" {% if status_filter == 'VALIDATED' %}selected{% endif %}>Validé</option>
-                        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Annulé</option>
+                        <option value="">--- {{ 'common.all_statuses'|trans }} ---</option>
+                        <option value="DRAFT" {% if status_filter == 'DRAFT' %}selected{% endif %}>{{ 'status.draft'|trans }}</option>
+                        <option value="VALIDATED" {% if status_filter == 'VALIDATED' %}selected{% endif %}>{{ 'status.validated'|trans }}</option>
+                        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>{{ 'status.cancelled'|trans }}</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}" placeholder="Du">
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}" placeholder="{{ 'common.date_from'|trans }}">
                 </div>
                 <div class="col-md-2">
-                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}" placeholder="Au">
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}" placeholder="{{ 'common.date_to'|trans }}">
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-outline-secondary flex-grow-1">
-                        <i class="fas fa-search"></i> Filtrer
+                        <i class="fas fa-search"></i> {{ 'common.filter'|trans }}
                     </button>
                     {% if search_query != '' or status_filter != '' or date_from != '' or date_to != '' %}
-                    <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                    <a href="{{ path('app_bon_livraison_index') }}" class="btn btn-outline-secondary" title="{{ 'common.reset'|trans }}">
                         <i class="bi bi-x-circle"></i>
                     </a>
                     {% endif %}
@@ -60,17 +60,17 @@
         <table class="table table-hover">
             <thead class="table-light">
                 <tr>
-                    <th>Référence</th>
-                    <th>Commande</th>
-                    <th>Client</th>
-                    <th>Statut</th>
-                    <th>Date de création</th>
-                    <th class="text-center">Actions</th>
+                    <th>{{ 'delivery.col_reference'|trans }}</th>
+                    <th>{{ 'delivery.col_order'|trans }}</th>
+                    <th>{{ 'delivery.col_client'|trans }}</th>
+                    <th>{{ 'common.status'|trans }}</th>
+                    <th>{{ 'delivery.col_date'|trans }}</th>
+                    <th class="text-center">{{ 'common.actions'|trans }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for delivery in delivery_notes %}
-                {% set deliveryClientName = delivery.bonCommande.clientSnapshot.name|default(delivery.bonCommande.client ? delivery.bonCommande.client.name : 'Client inconnu') %}
+                {% set deliveryClientName = delivery.bonCommande.clientSnapshot.name|default(delivery.bonCommande.client ? delivery.bonCommande.client.name : '—') %}
                 <tr>
                     <td><strong>{{ delivery.reference }}</strong></td>
                     <td>{{ delivery.bonCommande.reference }}</td>
@@ -80,21 +80,22 @@
                             {% if delivery.status == 'DRAFT' %}bg-warning
                             {% elseif delivery.status == 'VALIDATED' %}bg-success
                             {% elseif delivery.status == 'CANCELLED' %}bg-danger{% endif %}">
-                            {{ delivery.status == 'DRAFT' ? 'Brouillon' : 
-                               delivery.status == 'VALIDATED' ? 'Validé' : 
-                               delivery.status == 'CANCELLED' ? 'Annulé' : delivery.status }}
+                            {% if delivery.status == 'DRAFT' %}{{ 'status.draft'|trans }}
+                            {% elseif delivery.status == 'VALIDATED' %}{{ 'status.validated'|trans }}
+                            {% elseif delivery.status == 'CANCELLED' %}{{ 'status.cancelled'|trans }}
+                            {% else %}{{ delivery.status }}{% endif %}
                         </span>
                     </td>
                     <td>{{ delivery.createdAt|date('d/m/Y H:i') }}</td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm" role="group">
                             <a href="{{ path('app_bon_livraison_show', {'id': delivery.id}) }}" 
-                               class="btn btn-outline-secondary" title="Voir">
+                               class="btn btn-outline-secondary" title="{{ 'common.see_all'|trans }}">
                                 <i class="bi bi-eye"></i>
                             </a>
                             {% if delivery.canBeEdited() %}
                             <a href="{{ path('app_bon_livraison_edit', {'id': delivery.id}) }}" 
-                               class="btn btn-outline-primary" title="Modifier">
+                               class="btn btn-outline-primary" title="{{ 'common.edit'|trans }}">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             {% endif %}
@@ -107,18 +108,18 @@
     </div>
     {% else %}
     <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <i class="fas fa-info-circle"></i> Aucun bon de livraison trouvé.
+        <i class="fas fa-info-circle"></i> {{ 'delivery.no_found_info'|trans }}
     </div>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Bons de commande disponibles pour livraison</h5>
+            <h5 class="mb-0">{{ 'delivery.available_orders_title'|trans }}</h5>
         </div>
         <div class="card-body">
             {% if available_orders|length > 0 %}
                 <ul class="list-group list-group-flush">
                     {% for order in available_orders %}
-                        {% set orderClientName = order.clientSnapshot.name|default(order.client ? order.client.name : 'Client inconnu') %}
+                        {% set orderClientName = order.clientSnapshot.name|default(order.client ? order.client.name : '—') %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>{{ order.reference }}</strong>
@@ -130,11 +131,11 @@
                 </ul>
                 <div class="mt-3 text-end">
                     <a href="{{ path('app_bon_livraison_new') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Créer un bon de livraison
+                        <i class="fas fa-plus"></i> {{ 'delivery.create_btn'|trans }}
                     </a>
                 </div>
             {% else %}
-                <p class="text-muted mb-0">Aucun bon de commande disponible. Créez d'abord un bon de commande.</p>
+                <p class="text-muted mb-0">{{ 'delivery.no_orders_hint'|trans }}</p>
             {% endif %}
         </div>
     </div>

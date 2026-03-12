@@ -7,29 +7,29 @@
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h1 class="mb-1"><i class="bi bi-file-earmark-text"></i> {{ order.reference }}</h1>
-            <div class="text-muted">Cree le {{ order.createdAt|date('d/m/Y H:i') }}</div>
+            <div class="text-muted">{{ 'order.show_created_at'|trans }} {{ order.createdAt|date('d/m/Y H:i') }}</div>
         </div>
         <div class="text-end">
             {% if order.status == 'CANCELLED' %}
-                <span class="badge bg-danger fs-6">Annulee</span>
+                <span class="badge bg-danger fs-6">{{ 'status.cancelled'|trans }}</span>
             {% elseif order.status == 'DELIVERED' %}
-                <span class="badge bg-success fs-6">Livree</span>
+                <span class="badge bg-success fs-6">{{ 'status.delivered'|trans }}</span>
             {% elseif order.status == 'PARTIALLY_DELIVERED' %}
-                <span class="badge bg-warning text-dark fs-6">Partiellement livree</span>
+                <span class="badge bg-warning text-dark fs-6">{{ 'status.partially_delivered'|trans }}</span>
             {% elseif order.status == 'CONFIRMED' %}
-                <span class="badge bg-primary fs-6">Confirmee</span>
+                <span class="badge bg-primary fs-6">{{ 'status.confirmed'|trans }}</span>
             {% else %}
-                <span class="badge bg-secondary fs-6">Brouillon</span>
+                <span class="badge bg-secondary fs-6">{{ 'status.draft'|trans }}</span>
             {% endif %}
             {% if order.cancelledAt %}
-                <div class="small text-muted mt-1">Annulee le {{ order.cancelledAt|date('d/m/Y H:i') }}</div>
+                <div class="small text-muted mt-1">{{ 'status.cancelled'|trans }} {{ order.cancelledAt|date('d/m/Y H:i') }}</div>
             {% endif %}
         </div>
     </div>
 
     <div class="card mb-4">
         <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-person-badge"></i> Client</h5>
+            <h5 class="mb-0"><i class="bi bi-person-badge"></i> {{ 'common.client'|trans }}</h5>
         </div>
         <div class="card-body">
             {% set clientName = order.clientSnapshot.name|default(order.client ? order.client.name : '-') %}
@@ -40,10 +40,10 @@
                 <div class="col-md-6">
                     <div><strong>{{ clientName }}</strong></div>
                     <div class="text-muted">Code: {{ clientCode }}</div>
-                    <div class="text-muted">MF: {{ clientMf }}</div>
+                    <div class="text-muted">{{ 'common.mf'|trans }}: {{ clientMf }}</div>
                 </div>
                 <div class="col-md-6">
-                    <div class="fw-semibold">Adresse</div>
+                    <div class="fw-semibold">{{ 'common.address'|trans }}</div>
                     <div class="text-muted">{{ clientAddress }}</div>
                 </div>
             </div>
@@ -52,18 +52,18 @@
 
     <div class="card mb-4">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-list-check"></i> Lignes de commande</h5>
-            <span class="badge text-bg-secondary">{{ order.bonCommandeItems|length }} ligne(s)</span>
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> {{ 'order.items_section'|trans }}</h5>
+            <span class="badge text-bg-secondary">{{ 'common.line_count'|trans({'%count%': order.bonCommandeItems|length}) }}</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Article</th>
-                            <th class="text-end">Quantite</th>
-                            <th class="text-end">Prix unitaire</th>
-                            <th class="text-end">Total ligne</th>
+                            <th>{{ 'nav.articles'|trans }}</th>
+                            <th class="text-end">{{ 'common.quantity'|trans }}</th>
+                            <th class="text-end">{{ 'common.unit_price'|trans }}</th>
+                            <th class="text-end">{{ 'common.total'|trans }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,13 +82,13 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">Aucune ligne</td>
+                                <td colspan="4" class="text-center text-muted py-4">{{ 'common.no_lines'|trans }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="3" class="text-end">Total HT</th>
+                            <th colspan="3" class="text-end">{{ 'common.total_ht'|trans }}</th>
                             <th class="text-end">{{ totalHt|number_format(3, '.', ' ') }} TND</th>
                         </tr>
                     </tfoot>
@@ -99,35 +99,35 @@
 
     {% if has_privilege('ORDER_EDIT') and not order.canBeEdited %}
     <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle"></i> <strong>Ce bon de commande ne peut pas être modifié</strong> car il est lié à un ou plusieurs bons de livraison.
+        <i class="bi bi-exclamation-triangle"></i> <strong>{{ 'order.not_editable'|trans }}</strong>
     </div>
     {% endif %}
 
     <div class="d-flex gap-2 flex-wrap">
         <a href="{{ path('app_bon_commande_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Retour a la liste
+            <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
         </a>
 
         {% if has_privilege('ORDER_EDIT') and order.canBeEdited %}
             <a href="{{ path('app_bon_commande_edit', {'id': order.id}) }}" class="btn btn-primary">
-                <i class="bi bi-pencil"></i> Modifier
+                <i class="bi bi-pencil"></i> {{ 'common.edit'|trans }}
             </a>
         {% endif %}
 
         {% if has_privilege('ORDER_CANCEL') and order.status != 'CANCELLED' %}
-            <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" onsubmit="return confirm('Confirmer l\'annulation logique de cette commande ?');">
+            <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" onsubmit="return confirm('{{ 'order.confirm_cancel'|trans }}');">
                 <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ order.id) }}">
                 <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-x-circle"></i> Annuler la commande
+                    <i class="bi bi-x-circle"></i> {{ 'order.cancel_btn'|trans }}
                 </button>
             </form>
         {% endif %}
 
         {% if is_granted('ROLE_ADMIN') %}
-            <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de commande ?');">
+            <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" onsubmit="return confirm('{{ 'order.confirm_delete'|trans }}');">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                 <button type="submit" class="btn btn-dark">
-                    <i class="bi bi-trash"></i> Supprimer physiquement (Admin)
+                    <i class="bi bi-trash"></i> {{ 'order.delete_admin'|trans }}
                 </button>
             </form>
         {% endif %}

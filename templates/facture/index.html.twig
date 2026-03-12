@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Factures{% endblock %}
+{% block title %}{{ 'invoice.title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-receipt"></i> Factures</h1>
+        <h1><i class="bi bi-receipt"></i> {{ 'invoice.title'|trans }}</h1>
         {% if has_privilege('INVOICE_CREATE') %}
             <a href="{{ path('app_facture_new') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nouvelle facture
+                <i class="bi bi-plus-circle"></i> {{ 'invoice.new'|trans }}
             </a>
         {% endif %}
     </div>
@@ -17,31 +17,31 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
-                    <label for="search" class="form-label">Recherche</label>
+                    <label for="search" class="form-label">{{ 'common.search'|trans }}</label>
                     <input
                         type="text"
                         id="search"
                         name="search"
                         class="form-control"
                         value="{{ search }}"
-                        placeholder="Reference, client, code client..."
+                        placeholder="{{ 'invoice.search_placeholder'|trans }}"
                     >
                 </div>
                 <div class="col-md-3">
-                    <label for="status" class="form-label">Statut</label>
+                    <label for="status" class="form-label">{{ 'common.status'|trans }}</label>
                     <select id="status" name="status" class="form-select">
-                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>{{ 'common.all'|trans }}</option>
                         {% for code, label in statusChoices %}
                             <option value="{{ code }}" {% if statusFilter == code %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date_from" class="form-label">Date debut</label>
+                    <label for="date_from" class="form-label">{{ 'common.date_start'|trans }}</label>
                     <input type="date" id="date_from" name="date_from" value="{{ dateFrom }}" class="form-control">
                 </div>
                 <div class="col-md-2">
-                    <label for="date_to" class="form-label">Date fin</label>
+                    <label for="date_to" class="form-label">{{ 'common.date_end'|trans }}</label>
                     <input type="date" id="date_to" name="date_to" value="{{ dateTo }}" class="form-control">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
@@ -55,7 +55,7 @@
 
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Liste ({{ invoices|length }})</h5>
+            <h5 class="mb-0">{{ 'order.list_count'|trans({'%count%': invoices|length}) }}</h5>
         </div>
         <div class="card-body p-0">
             {% if invoices|length > 0 %}
@@ -63,13 +63,13 @@
                     <table class="table table-striped table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Reference</th>
-                                <th>Client</th>
-                                <th>Date creation</th>
-                                <th class="text-center">BL lies</th>
-                                <th class="text-end">Total TTC</th>
-                                <th class="text-center">Statut</th>
-                                <th class="text-center">Actions</th>
+                                <th>{{ 'invoice.col_reference'|trans }}</th>
+                                <th>{{ 'invoice.col_client'|trans }}</th>
+                                <th>{{ 'invoice.col_date'|trans }}</th>
+                                <th class="text-center">{{ 'invoice.col_deliveries'|trans }}</th>
+                                <th class="text-end">{{ 'invoice.col_total_ttc'|trans }}</th>
+                                <th class="text-center">{{ 'invoice.col_status'|trans }}</th>
+                                <th class="text-center">{{ 'invoice.col_actions'|trans }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,20 +95,20 @@
                                     <td class="text-end fw-semibold">{{ invoice.totalTtc|number_format(3, '.', ' ') }} TND</td>
                                     <td class="text-center">
                                         {% if invoice.status == 'CANCELLED' %}
-                                            <span class="badge bg-danger">Annulee</span>
+                                            <span class="badge bg-danger">{{ 'status.cancelled'|trans }}</span>
                                         {% elseif invoice.status == 'PAID' %}
-                                            <span class="badge bg-success">Payee</span>
+                                            <span class="badge bg-success">{{ 'status.paid'|trans }}</span>
                                         {% elseif invoice.status == 'PARTIALLY_PAID' %}
-                                            <span class="badge bg-warning text-dark">Partiellement payee</span>
+                                            <span class="badge bg-warning text-dark">{{ 'status.partially_paid'|trans }}</span>
                                         {% elseif invoice.status == 'UNPAID' %}
-                                            <span class="badge bg-primary">Impayee</span>
+                                            <span class="badge bg-primary">{{ 'status.unpaid'|trans }}</span>
                                         {% else %}
                                             <span class="badge bg-secondary">{{ invoice.status }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ path('app_facture_show', {'id': invoice.id}) }}" class="btn btn-outline-secondary" title="Voir">
+                                            <a href="{{ path('app_facture_show', {'id': invoice.id}) }}" class="btn btn-outline-secondary" title="{{ 'common.see_all'|trans }}">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                         </div>
@@ -121,7 +121,7 @@
             {% else %}
                 <div class="text-center py-5">
                     <i class="bi bi-inbox display-1 text-muted"></i>
-                    <p class="text-muted mt-3">Aucune facture trouvee</p>
+                    <p class="text-muted mt-3">{{ 'invoice.no_invoices'|trans }}</p>
                 </div>
             {% endif %}
         </div>

@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Bons de commande{% endblock %}
+{% block title %}{{ 'order.title'|trans }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-file-earmark-text"></i> Bons de commande</h1>
+        <h1><i class="bi bi-file-earmark-text"></i> {{ 'order.title'|trans }}</h1>
         {% if has_privilege('ORDER_CREATE') %}
             <a href="{{ path('app_bon_commande_new') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nouveau bon de commande
+                <i class="bi bi-plus-circle"></i> {{ 'order.new'|trans }}
             </a>
         {% endif %}
     </div>
@@ -17,39 +17,39 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
-                    <label for="search" class="form-label">Rechercher</label>
+                    <label for="search" class="form-label">{{ 'common.search'|trans }}</label>
                     <input
                         type="text"
                         class="form-control"
                         id="search"
                         name="search"
                         value="{{ search }}"
-                        placeholder="Référence, client, code client..."
+                        placeholder="{{ 'order.search_placeholder'|trans }}"
                     >
                 </div>
                 <div class="col-md-2">
-                    <label for="status" class="form-label">Statut</label>
+                    <label for="status" class="form-label">{{ 'common.status'|trans }}</label>
                     <select class="form-select" id="status" name="status">
-                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="all" {% if statusFilter == 'all' %}selected{% endif %}>{{ 'common.all'|trans }}</option>
                         {% for code, label in statusChoices %}
                             <option value="{{ code }}" {% if statusFilter == code %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="date_from" class="form-label">Du</label>
+                    <label for="date_from" class="form-label">{{ 'common.date_from'|trans }}</label>
                     <input type="date" class="form-control" id="date_from" name="date_from" value="{{ dateFrom }}">
                 </div>
                 <div class="col-md-2">
-                    <label for="date_to" class="form-label">Au</label>
+                    <label for="date_to" class="form-label">{{ 'common.date_to'|trans }}</label>
                     <input type="date" class="form-control" id="date_to" name="date_to" value="{{ dateTo }}">
                 </div>
                 <div class="col-md-2 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-secondary flex-grow-1">
-                        <i class="bi bi-search"></i> Filtrer
+                        <i class="bi bi-search"></i> {{ 'common.filter'|trans }}
                     </button>
                     {% if search != '' or statusFilter != 'all' or dateFrom != '' or dateTo != '' %}
-                    <a href="{{ path('app_bon_commande_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                    <a href="{{ path('app_bon_commande_index') }}" class="btn btn-outline-secondary" title="{{ 'common.reset'|trans }}">
                         <i class="bi bi-x-circle"></i>
                     </a>
                     {% endif %}
@@ -60,7 +60,7 @@
 
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0">Liste ({{ orders|length }})</h5>
+            <h5 class="mb-0">{{ 'order.list_count'|trans({'%count%': orders|length}) }}</h5>
         </div>
         <div class="card-body p-0">
             {% if orders|length > 0 %}
@@ -68,12 +68,12 @@
                     <table class="table table-striped table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Reference</th>
-                                <th>Client</th>
-                                <th>Date creation</th>
-                                <th class="text-center">Lignes</th>
-                                <th class="text-center">Statut</th>
-                                <th class="text-center">Actions</th>
+                                <th>{{ 'order.col_reference'|trans }}</th>
+                                <th>{{ 'order.col_client'|trans }}</th>
+                                <th>{{ 'order.col_date'|trans }}</th>
+                                <th class="text-center">{{ 'order.col_lines'|trans }}</th>
+                                <th class="text-center">{{ 'order.col_status'|trans }}</th>
+                                <th class="text-center">{{ 'order.col_actions'|trans }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -91,39 +91,39 @@
                                     <td class="text-center">{{ order.bonCommandeItems|length }}</td>
                                     <td class="text-center">
                                         {% if order.status == 'CANCELLED' %}
-                                            <span class="badge bg-danger">Annulee</span>
+                                            <span class="badge bg-danger">{{ 'status.cancelled'|trans }}</span>
                                         {% elseif order.status == 'DELIVERED' %}
-                                            <span class="badge bg-success">Livree</span>
+                                            <span class="badge bg-success">{{ 'status.delivered'|trans }}</span>
                                         {% elseif order.status == 'PARTIALLY_DELIVERED' %}
-                                            <span class="badge bg-warning text-dark">Partiellement livree</span>
+                                            <span class="badge bg-warning text-dark">{{ 'status.partially_delivered'|trans }}</span>
                                         {% elseif order.status == 'CONFIRMED' %}
-                                            <span class="badge bg-primary">Confirmee</span>
+                                            <span class="badge bg-primary">{{ 'status.confirmed'|trans }}</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">Brouillon</span>
+                                            <span class="badge bg-secondary">{{ 'status.draft'|trans }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ path('app_bon_commande_show', {'id': order.id}) }}" class="btn btn-outline-secondary" title="Voir">
+                                            <a href="{{ path('app_bon_commande_show', {'id': order.id}) }}" class="btn btn-outline-secondary" title="{{ 'common.edit'|trans }}">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             {% if has_privilege('ORDER_EDIT') and order.canBeEdited %}
-                                                <a href="{{ path('app_bon_commande_edit', {'id': order.id}) }}" class="btn btn-outline-primary" title="Modifier">
+                                                <a href="{{ path('app_bon_commande_edit', {'id': order.id}) }}" class="btn btn-outline-primary" title="{{ 'common.edit'|trans }}">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             {% endif %}
                                             {% if has_privilege('ORDER_CANCEL') and order.status != 'CANCELLED' %}
-                                                <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('Confirmer l\'annulation logique de cette commande ?');">
+                                                <form method="post" action="{{ path('app_bon_commande_cancel', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('{{ 'order.confirm_cancel'|trans }}');">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ order.id) }}">
-                                                    <button type="submit" class="btn btn-outline-danger" title="Annuler">
+                                                    <button type="submit" class="btn btn-outline-danger" title="{{ 'common.cancel'|trans }}">
                                                         <i class="bi bi-x-circle"></i>
                                                     </button>
                                                 </form>
                                             {% endif %}
                                             {% if is_granted('ROLE_ADMIN') %}
-                                                <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('Suppression physique: confirmer la suppression definitive de ce bon de commande ?');">
+                                                <form method="post" action="{{ path('app_bon_commande_delete', {'id': order.id}) }}" style="display: inline;" onsubmit="return confirm('{{ 'order.confirm_delete'|trans }}');">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
-                                                    <button type="submit" class="btn btn-outline-dark" title="Supprimer physiquement (Admin)">
+                                                    <button type="submit" class="btn btn-outline-dark" title="{{ 'common.delete'|trans }}">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
@@ -138,7 +138,7 @@
             {% else %}
                 <div class="text-center py-5">
                     <i class="bi bi-inbox display-1 text-muted"></i>
-                    <p class="text-muted mt-3">Aucun bon de commande trouve</p>
+                    <p class="text-muted mt-3">{{ 'order.no_orders'|trans }}</p>
                 </div>
             {% endif %}
         </div>
