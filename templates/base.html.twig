@@ -261,6 +261,7 @@
                                 {% if has_privilege('PAYMENT_VIEW') %}
                                 <li><a class="dropdown-item" href="{{ path('app_payment_index') }}">{{ 'nav.payments'|trans }}</a></li>
                                 {% endif %}
+                                <li><a class="dropdown-item" href="{{ path('app_reports_index') }}"><i class="bi bi-graph-up-arrow"></i> {{ 'nav.reports'|trans }}</a></li>
                                 {% if has_privilege('AUDIT_VIEW') %}
                                 <li><a class="dropdown-item" href="{{ path('app_audit_log_index') }}">{{ 'nav.audit'|trans }}</a></li>
                                 {% endif %}

@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'reports.title'|trans }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1"><i class="bi bi-graph-up-arrow"></i> {{ 'reports.title'|trans }}</h1>
+            <div class="text-muted">{{ 'reports.subtitle'|trans }}</div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label">{{ 'reports.date_from'|trans }}</label>
+                    <input type="date" class="form-control" name="date_from" value="{{ dateFrom|date('Y-m-d') }}">
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <label class="form-label">{{ 'reports.date_to'|trans }}</label>
+                    <input type="date" class="form-control" name="date_to" value="{{ dateTo|date('Y-m-d') }}">
+                </div>
+                <div class="col-md-4 col-lg-3 d-grid">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-funnel"></i> {{ 'reports.apply'|trans }}
+                    </button>
+                </div>
+                <div class="col-md-4 col-lg-3 d-grid">
+                    <a href="{{ path('app_reports_index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> {{ 'reports.reset'|trans }}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-light border d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-calendar-range"></i>
+        <strong>{{ 'reports.period'|trans }}:</strong>
+        <span>{{ dateFrom|date('d/m/Y') }} → {{ dateTo|date('d/m/Y') }}</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-primary h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.total_billed'|trans }}</div>
+                    <div class="fs-4 fw-bold text-primary">{{ totalBilled|number_format(3, '.', ' ') }} TND</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-success h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.total_collected'|trans }}</div>
+                    <div class="fs-4 fw-bold text-success">{{ totalCollected|number_format(3, '.', ' ') }} TND</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-warning h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.outstanding'|trans }}</div>
+                    <div class="fs-4 fw-bold text-warning">{{ outstanding|number_format(3, '.', ' ') }} TND</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-info h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.collection_rate'|trans }}</div>
+                    <div class="fs-4 fw-bold text-info">{{ collectionRate|number_format(1, '.', ' ') }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.orders_created'|trans }}</div>
+                    <div class="fs-3 fw-bold">{{ ordersCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.deliveries_created'|trans }}</div>
+                    <div class="fs-3 fw-bold">{{ deliveriesCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.invoices_created'|trans }}</div>
+                    <div class="fs-3 fw-bold">{{ invoicesCount }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">{{ 'reports.payments_recorded'|trans }}</div>
+                    <div class="fs-3 fw-bold">{{ paymentsCount }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-pie-chart"></i> {{ 'reports.invoice_status_breakdown'|trans }}</h6>
+                </div>
+                <div class="card-body">
+                    {% set totalStatus = invoiceStatus.UNPAID + invoiceStatus.PARTIALLY_PAID + invoiceStatus.PAID + invoiceStatus.CANCELLED %}
+
+                    {% for row in [
+                        {'code': 'UNPAID', 'label': 'status.unpaid', 'badge': 'danger'},
+                        {'code': 'PARTIALLY_PAID', 'label': 'status.partially_paid', 'badge': 'warning'},
+                        {'code': 'PAID', 'label': 'status.paid', 'badge': 'success'},
+                        {'code': 'CANCELLED', 'label': 'status.cancelled', 'badge': 'secondary'}
+                    ] %}
+                        {% set value = attribute(invoiceStatus, row.code) %}
+                        {% set pct = totalStatus > 0 ? (value / totalStatus) * 100 : 0 %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge bg-{{ row.badge }}">{{ row.label|trans }}</span>
+                                <strong>{{ value }}</strong>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-{{ row.badge }}" style="width: {{ pct }}%"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-people"></i> {{ 'reports.top_clients'|trans }}</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{ 'reports.col_client'|trans }}</th>
+                                <th class="text-center">{{ 'reports.col_orders'|trans }}</th>
+                                <th class="text-end">{{ 'reports.col_total_ordered'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in topClients %}
+                                <tr>
+                                    <td>{{ client.clientName }}</td>
+                                    <td class="text-center">{{ client.ordersCount }}</td>
+                                    <td class="text-end">{{ client.totalOrdered|number_format(3, '.', ' ') }} TND</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">{{ 'reports.no_data'|trans }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-box-seam"></i> {{ 'reports.top_articles'|trans }}</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>{{ 'reports.col_article'|trans }}</th>
+                                <th class="text-end">{{ 'reports.col_quantity'|trans }}</th>
+                                <th class="text-end">{{ 'reports.col_total'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for article in topArticles %}
+                                <tr>
+                                    <td>{{ article.articleName }}</td>
+                                    <td class="text-end">{{ article.totalQuantity|number_format(2, '.', ' ') }}</td>
+                                    <td class="text-end">{{ article.totalValue|number_format(3, '.', ' ') }} TND</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">{{ 'reports.no_data'|trans }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
