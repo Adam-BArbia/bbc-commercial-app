@@ -37,9 +37,8 @@
                                     {# Calculate delivered quantity EXCLUDING current BL being edited #}
                                     {% set currentItemDelivery = bon_livraison.bonLivraisonItems.filter(item => item.bonCommandeItem.id == orderItem.id).first() %}
                                     {% set currentQty = currentItemDelivery ? currentItemDelivery.quantityDelivered : 0 %}
-                                    {% set totalDelivered = orderItem.deliveredQuantity %}
-                                    {% set deliveredExcludingThis = totalDelivered - currentQty %}
-                                    {% set remainingQty = orderItem.quantity - deliveredExcludingThis %}
+                                    {% set deliveredExcludingThis = orderItem.getDeliveredQuantityExcluding(bon_livraison) %}
+                                    {% set remainingQty = orderItem.getRemainingQuantityExcluding(bon_livraison) %}
                                     <tr>
                                         <td>{{ orderItem.article.designation }}</td>
                                         <td class="text-center">{{ orderItem.quantity }}</td>

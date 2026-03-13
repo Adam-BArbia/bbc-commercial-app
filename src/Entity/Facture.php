@@ -29,6 +29,10 @@ class Facture
     #[ORM\Column(type: 'decimal', precision: 12, scale: 3)]
     private ?string $total_ht = '0.000';
 
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 3)]
+    #[Assert\PositiveOrZero]
+    private ?string $remise = '0.000';
+
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2)]
     #[Assert\PositiveOrZero]
     private ?string $tva_rate = '0.00';
@@ -119,6 +123,17 @@ class Facture
     public function setTotalHt(string $total_ht): static
     {
         $this->total_ht = $total_ht;
+        return $this;
+    }
+
+    public function getRemise(): ?string
+    {
+        return $this->remise;
+    }
+
+    public function setRemise(string $remise): static
+    {
+        $this->remise = $remise;
         return $this;
     }
 
@@ -312,6 +327,19 @@ class Facture
             $total = (string) ((float) $total + (float) $pf->getAmountAllocated());
         }
         return $total;
+    }
+
+    /**
+     * Get total amount before discount.
+     */
+    public function getSubtotalHt(): string
+    {
+        $subtotal = '0.000';
+        foreach ($this->factureItems as $item) {
+            $subtotal = (string) ((float) $subtotal + (float) $item->getTotalLineHt());
+        }
+
+        return $subtotal;
     }
 
     /**

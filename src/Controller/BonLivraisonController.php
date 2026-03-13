@@ -10,6 +10,7 @@ use App\Form\BonLivraisonType;
 use App\Repository\BonCommandeRepository;
 use App\Repository\BonLivraisonRepository;
 use App\Repository\DocumentCounterRepository;
+use App\Service\OrderDeliveryStatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -88,7 +89,8 @@ class BonLivraisonController extends AbstractController
     public function new(
         Request $request,
         DocumentCounterRepository $documentCounterRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        OrderDeliveryStatusManager $orderDeliveryStatusManager
     ): Response {
         $bonLivraison = new BonLivraison();
         $form = $this->createForm(BonLivraisonType::class, $bonLivraison);
@@ -174,10 +176,7 @@ class BonLivraisonController extends AbstractController
 
             $entityManager->persist($bonLivraison);
 
-            // Update order status if this is the first delivery
-            if (!$bonCommande->hasDeliveryNotes()) {
-                $bonCommande->setStatus('PARTIALLY_DELIVERED');
-            }
+            $orderDeliveryStatusManager->refresh($bonCommande);
 
             $entityManager->flush();
 
@@ -204,7 +203,8 @@ class BonLivraisonController extends AbstractController
     public function edit(
         Request $request,
         BonLivraison $bonLivraison,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        OrderDeliveryStatusManager $orderDeliveryStatusManager
     ): Response {
         // Only allow editing if not invoiced
         if (!$bonLivraison->canBeEdited()) {
@@ -231,13 +231,7 @@ class BonLivraisonController extends AbstractController
                     )->first();
 
                     if ($orderItem) {
-                        // Calculate delivered excluding current BL being edited
-                        $totalDelivered = (float) $orderItem->getDeliveredQuantity();
-                        $currentBLitem = $bonLivraison->getBonLivraisonItems()->filter(
-                            fn($item) => $item->getBonCommandeItem()->getId() == $orderItemId
-                        )->first();
-                        $currentQty = $currentBLitem ? (float) $currentBLitem->getQuantityDelivered() : 0;
-                        $deliveredExcludingThis = $totalDelivered - $currentQty;
+                        $deliveredExcludingThis = (float) $orderItem->getDeliveredQuantityExcluding($bonLivraison);
                         
                         // Check if new quantity + other deliveries exceeds ordered
                         $orderedQty = (float) $orderItem->getQuantity();
@@ -288,6 +282,8 @@ class BonLivraisonController extends AbstractController
                 return $this->redirectToRoute('app_bon_livraison_edit', ['id' => $bonLivraison->getId()]);
             }
 
+            $orderDeliveryStatusManager->refresh($bonCommande);
+
             $entityManager->flush();
             $this->addFlash('success', 'Le bon de livraison a été modifié avec succès.');
             return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
@@ -304,7 +300,8 @@ class BonLivraisonController extends AbstractController
     public function cancel(
         Request $request,
         BonLivraison $bonLivraison,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        OrderDeliveryStatusManager $orderDeliveryStatusManager
     ): Response {
         if (!$this->isCsrfTokenValid('cancel' . $bonLivraison->getId(), (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
@@ -318,6 +315,8 @@ class BonLivraisonController extends AbstractController
         $bonLivraison->setStatus('CANCELLED');
         $bonLivraison->setCancelledAt(new \DateTime());
 
+        $orderDeliveryStatusManager->refresh($bonLivraison->getBonCommande());
+
         $entityManager->flush();
 
         $this->addFlash('success', sprintf('Le bon de livraison %s a été annulé.', $bonLivraison->getReference()));
@@ -329,7 +328,8 @@ class BonLivraisonController extends AbstractController
     public function confirm(
         Request $request,
         BonLivraison $bonLivraison,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        OrderDeliveryStatusManager $orderDeliveryStatusManager
     ): Response {
         if (!$this->isCsrfTokenValid('confirm' . $bonLivraison->getId(), (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
@@ -346,6 +346,7 @@ class BonLivraisonController extends AbstractController
         }
 
         $bonLivraison->setStatus('VALIDATED');
+        $orderDeliveryStatusManager->refresh($bonLivraison->getBonCommande());
         $entityManager->flush();
 
         $this->addFlash('success', sprintf('Le bon de livraison %s a été confirmé.', $bonLivraison->getReference()));
@@ -356,7 +357,8 @@ class BonLivraisonController extends AbstractController
     public function delete(
         Request $request,
         BonLivraison $bonLivraison,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        OrderDeliveryStatusManager $orderDeliveryStatusManager
     ): Response {
         if (!$this->isCsrfTokenValid('delete' . $bonLivraison->getId(), (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_bon_livraison_show', ['id' => $bonLivraison->getId()]);
@@ -368,7 +370,13 @@ class BonLivraisonController extends AbstractController
         }
 
         $reference = $bonLivraison->getReference();
+        $bonCommande = $bonLivraison->getBonCommande();
         $entityManager->remove($bonLivraison);
+
+        if ($bonCommande !== null) {
+            $orderDeliveryStatusManager->refresh($bonCommande);
+        }
+
         $entityManager->flush();
 
         $this->addFlash('success', sprintf('Le bon de livraison %s a été supprimé.', $reference));

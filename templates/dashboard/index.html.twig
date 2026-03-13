@@ -47,16 +47,33 @@
         {% if has_privilege('ORDER_VIEW') %}
         <div class="col-sm-6 col-xl-3">
             <a href="{{ path('app_bon_commande_index', {status: 'CONFIRMED'}) }}" class="text-decoration-none">
-                <div class="card text-white bg-primary h-100">
+                <div class="card text-white bg-success h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-white-50 small mb-1">{{ 'dashboard.orders_in_progress'|trans }}</div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.orders_made'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ ordersInProgress }}</div>
                         </div>
                         <i class="bi bi-cart3 fs-1 opacity-50"></i>
                     </div>
                     <div class="card-footer bg-white bg-opacity-25 py-1">
-                        <small>{{ 'dashboard.orders_subtitle'|trans }}</small>
+                        <small>{{ 'dashboard.orders_made_subtitle'|trans }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_bon_commande_index') }}" class="text-decoration-none">
+                <div class="card text-dark bg-warning h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-black-50 small mb-1">{{ 'dashboard.orders_without_validated_deliveries'|trans }}</div>
+                            <div class="fs-2 fw-bold">{{ ordersWithoutValidatedDeliveries }}</div>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                    </div>
+                    <div class="card-footer bg-black bg-opacity-10 py-1">
+                        <small>{{ 'dashboard.orders_without_validated_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -66,16 +83,33 @@
         {% if has_privilege('DELIVERY_VIEW') %}
         <div class="col-sm-6 col-xl-3">
             <a href="{{ path('app_bon_livraison_index', {status: 'VALIDATED'}) }}" class="text-decoration-none">
-                <div class="card text-white bg-success h-100">
+                <div class="card text-dark bg-warning h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-white-50 small mb-1">{{ 'dashboard.deliveries_not_invoiced'|trans }}</div>
+                            <div class="text-black-50 small mb-1">{{ 'dashboard.deliveries_not_invoiced'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ deliveriesNotInvoiced }}</div>
                         </div>
                         <i class="bi bi-truck fs-1 opacity-50"></i>
                     </div>
-                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                    <div class="card-footer bg-black bg-opacity-10 py-1">
                         <small>{{ 'dashboard.deliveries_subtitle'|trans }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_bon_livraison_index', {status: 'VALIDATED'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-success h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.deliveries_validated'|trans }}</div>
+                            <div class="fs-2 fw-bold">{{ deliveriesValidated }}</div>
+                        </div>
+                        <i class="bi bi-patch-check fs-1 opacity-50"></i>
+                    </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>{{ 'dashboard.deliveries_validated_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -84,17 +118,53 @@
 
         {% if has_privilege('INVOICE_VIEW') %}
         <div class="col-sm-6 col-xl-3">
-            <a href="{{ path('app_facture_index', {status: 'UNPAID'}) }}" class="text-decoration-none">
-                <div class="card text-dark bg-warning h-100">
+            <a href="{{ path('app_facture_index', {status: 'PAID'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-success h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-black-50 small mb-1">{{ 'dashboard.invoices_unpaid'|trans }}</div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.invoices_paid'|trans }}</div>
+                            <div class="fs-2 fw-bold">{{ invoicesPaid }}</div>
+                        </div>
+                        <i class="bi bi-cash-coin fs-1 opacity-50"></i>
+                    </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>{{ 'dashboard.invoices_paid_subtitle'|trans }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_facture_index', {status: 'UNPAID'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.invoices_unpaid'|trans }}</div>
                             <div class="fs-2 fw-bold">{{ invoicesUnpaid }}</div>
                         </div>
                         <i class="bi bi-receipt fs-1 opacity-50"></i>
                     </div>
-                    <div class="card-footer bg-black bg-opacity-10 py-1">
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
                         <small>{{ 'dashboard.invoices_subtitle'|trans }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+
+        {% if has_privilege('DELIVERY_VIEW') %}
+        <div class="col-sm-6 col-xl-3">
+            <a href="{{ path('app_bon_livraison_index', {status: 'DRAFT'}) }}" class="text-decoration-none">
+                <div class="card text-white bg-info h-100">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small mb-1">{{ 'dashboard.deliveries_draft'|trans }}</div>
+                            <div class="fs-2 fw-bold">{{ deliveriesDraft }}</div>
+                        </div>
+                        <i class="bi bi-pencil-square fs-1 opacity-50"></i>
+                    </div>
+                    <div class="card-footer bg-white bg-opacity-25 py-1">
+                        <small>{{ 'dashboard.deliveries_draft_subtitle'|trans }}</small>
                     </div>
                 </div>
             </a>
@@ -104,7 +174,7 @@
         {% if has_privilege('CLIENT_VIEW') %}
         <div class="col-sm-6 col-xl-3">
             <a href="{{ path('app_client_index') }}" class="text-decoration-none">
-                <div class="card text-white bg-info h-100">
+                <div class="card text-white bg-success h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <div class="text-white-50 small mb-1">{{ 'dashboard.active_clients'|trans }}</div>

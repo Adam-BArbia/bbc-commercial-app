@@ -104,29 +104,51 @@ class BonCommandeItem
     }
 
     /**
-     * Get the sum of delivered quantities
+     * Get the sum of delivered quantities from validated delivery notes only.
      */
-    public function getDeliveredQuantity(): string
+    public function getDeliveredQuantity(?BonLivraison $excludedDelivery = null): string
     {
-        $total = 0;
+        $total = 0.0;
+
         foreach ($this->bonLivraisonItems as $item) {
-            // Cancelled delivery notes must not consume ordered quantity.
-            if ($item->getBonLivraison()?->getStatus() === 'CANCELLED') {
+            $deliveryNote = $item->getBonLivraison();
+            if ($deliveryNote === null) {
                 continue;
             }
+
+            if ($excludedDelivery !== null && $deliveryNote->getId() === $excludedDelivery->getId()) {
+                continue;
+            }
+
+            if ($deliveryNote->getStatus() !== 'VALIDATED') {
+                continue;
+            }
+
             $total += (float) $item->getQuantityDelivered();
         }
+
         return (string) $total;
     }
 
+    public function getDeliveredQuantityExcluding(?BonLivraison $excludedDelivery = null): string
+    {
+        return $this->getDeliveredQuantity($excludedDelivery);
+    }
+
     /**
-     * Calculate remaining quantity to be delivered
+     * Calculate remaining quantity to be delivered.
      */
-    public function getRemainingQuantity(): string
+    public function getRemainingQuantity(?BonLivraison $excludedDelivery = null): string
     {
         $ordered = (float) $this->quantity;
-        $delivered = (float) $this->getDeliveredQuantity();
-        return (string) ($ordered - $delivered);
+        $delivered = (float) $this->getDeliveredQuantity($excludedDelivery);
+
+        return (string) max(0, $ordered - $delivered);
+    }
+
+    public function getRemainingQuantityExcluding(?BonLivraison $excludedDelivery = null): string
+    {
+        return $this->getRemainingQuantity($excludedDelivery);
     }
 
     /**

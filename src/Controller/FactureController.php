@@ -106,12 +106,14 @@ class FactureController extends AbstractController
             $selectedIds = array_map('intval', $request->request->all('delivery_notes'));
             $tvaRate = (float) $request->request->get('tva_rate', 19.0);
             $tvaRate = max(0, min(100, $tvaRate));
+            $remise = round(max(0, (float) $request->request->get('remise', 0)), 3);
 
             if (count($selectedIds) === 0) {
                 $this->addFlash('error', 'Selectionnez au moins un bon de livraison.');
                 return $this->render('facture/new.html.twig', [
                     'available_deliveries' => $availableDeliveries,
                     'default_tva_rate' => $tvaRate,
+                    'default_remise' => $remise,
                 ]);
             }
 
@@ -133,6 +135,7 @@ class FactureController extends AbstractController
                 return $this->render('facture/new.html.twig', [
                     'available_deliveries' => $availableDeliveries,
                     'default_tva_rate' => $tvaRate,
+                    'default_remise' => $remise,
                 ]);
             }
 
@@ -148,6 +151,7 @@ class FactureController extends AbstractController
                         return $this->render('facture/new.html.twig', [
                             'available_deliveries' => $availableDeliveries,
                             'default_tva_rate' => $tvaRate,
+                            'default_remise' => $remise,
                         ]);
                     }
                 }
@@ -157,6 +161,7 @@ class FactureController extends AbstractController
                     return $this->render('facture/new.html.twig', [
                         'available_deliveries' => $availableDeliveries,
                         'default_tva_rate' => $tvaRate,
+                        'default_remise' => $remise,
                     ]);
                 }
 
@@ -165,6 +170,7 @@ class FactureController extends AbstractController
                     return $this->render('facture/new.html.twig', [
                         'available_deliveries' => $availableDeliveries,
                         'default_tva_rate' => $tvaRate,
+                        'default_remise' => $remise,
                     ]);
                 }
 
@@ -174,6 +180,7 @@ class FactureController extends AbstractController
                     return $this->render('facture/new.html.twig', [
                         'available_deliveries' => $availableDeliveries,
                         'default_tva_rate' => $tvaRate,
+                        'default_remise' => $remise,
                     ]);
                 }
 
@@ -186,6 +193,7 @@ class FactureController extends AbstractController
                     return $this->render('facture/new.html.twig', [
                         'available_deliveries' => $availableDeliveries,
                         'default_tva_rate' => $tvaRate,
+                        'default_remise' => $remise,
                     ]);
                 }
             }
@@ -195,6 +203,7 @@ class FactureController extends AbstractController
             $facture->setCreatedBy($this->getUser());
             $facture->setStatus('UNPAID');
             $facture->setTvaRate(number_format($tvaRate, 2, '.', ''));
+            $facture->setRemise(number_format($remise, 3, '.', ''));
             $facture->setTimbre('1.000');
             $facture->setClientSnapshot($this->buildClientSnapshotFromDeliveries($selectedDeliveries));
             $facture->setDeliverySnapshot($this->buildDeliverySnapshot($selectedDeliveries));
@@ -234,14 +243,25 @@ class FactureController extends AbstractController
                 return $this->render('facture/new.html.twig', [
                     'available_deliveries' => $availableDeliveries,
                     'default_tva_rate' => $tvaRate,
+                    'default_remise' => $remise,
                 ]);
             }
 
-            $tvaAmount = $totalHt * ($tvaRate / 100);
-            $timbre = 1.000;
-            $totalTtc = $totalHt + $tvaAmount + $timbre;
+            if ($remise > $totalHt) {
+                $this->addFlash('error', 'La remise ne peut pas depasser le total HT de la facture.');
+                return $this->render('facture/new.html.twig', [
+                    'available_deliveries' => $availableDeliveries,
+                    'default_tva_rate' => $tvaRate,
+                    'default_remise' => $remise,
+                ]);
+            }
 
-            $facture->setTotalHt(number_format($totalHt, 3, '.', ''));
+            $netTotalHt = $totalHt - $remise;
+            $tvaAmount = $netTotalHt * ($tvaRate / 100);
+            $timbre = 1.000;
+            $totalTtc = $netTotalHt + $tvaAmount + $timbre;
+
+            $facture->setTotalHt(number_format($netTotalHt, 3, '.', ''));
             $facture->setTvaAmount(number_format($tvaAmount, 3, '.', ''));
             $facture->setTotalTtc(number_format($totalTtc, 3, '.', ''));
 
@@ -256,6 +276,7 @@ class FactureController extends AbstractController
         return $this->render('facture/new.html.twig', [
             'available_deliveries' => $availableDeliveries,
             'default_tva_rate' => 19.0,
+            'default_remise' => 0,
         ]);
     }
 
