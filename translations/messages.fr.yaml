@@ -13,6 +13,7 @@ nav:
     admin: "Administration"
     users: "Utilisateurs"
     roles: "Rôles"
+    pdf_themes: "Thèmes PDF"
     profile: "Mon profil"
     change_password: "Changer mot de passe"
     logout: "Déconnexion"
@@ -204,6 +205,7 @@ delivery:
     confirm_cancel: "Confirmer l'annulation logique de ce bon de livraison ?"
     confirm_delete: "Suppression physique: confirmer la suppression définitive de ce bon de livraison ?"
     delete_admin: "Supprimer physiquement (Admin)"
+    pdf_btn: "PDF"
     created_by: "Créé par"
     search_placeholder: "Référence, commande ou client..."
     col_reference: "Référence"
@@ -265,6 +267,8 @@ invoice:
     col_status: "Statut"
     col_actions: "Actions"
     no_invoices: "Aucune facture trouvée"
+    pdf_btn: "PDF"
+    amount_in_words: "Arrêtée la présente facture à la somme de"
 
 payment:
     title: "Paiements"

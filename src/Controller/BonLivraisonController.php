@@ -6,11 +6,15 @@ use App\Entity\BonCommande;
 use App\Entity\BonLivraison;
 use App\Entity\BonLivraisonItem;
 use App\Entity\DocumentCounter;
+use App\Entity\PdfTheme;
 use App\Form\BonLivraisonType;
 use App\Repository\BonCommandeRepository;
 use App\Repository\BonLivraisonRepository;
 use App\Repository\DocumentCounterRepository;
+use App\Repository\PdfThemeRepository;
+use App\Service\PdfGenerator;
 use App\Service\OrderDeliveryStatusManager;
+use App\Service\PdfThemeLayoutService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -196,6 +200,52 @@ class BonLivraisonController extends AbstractController
         return $this->render('bon_livraison/show.html.twig', [
             'bon_livraison' => $bonLivraison,
         ]);
+    }
+
+    #[Route('/{id}/pdf', name: 'pdf', methods: ['GET'])]
+    #[IsGranted('DELIVERY_VIEW')]
+    public function pdf(
+        BonLivraison $bonLivraison,
+        PdfThemeRepository $pdfThemeRepository,
+        PdfThemeLayoutService $layoutService,
+        PdfGenerator $pdfGenerator
+    ): Response {
+        $theme = $pdfThemeRepository->findActiveByType(PdfTheme::TYPE_DELIVERY);
+        $imagePath = $theme?->getImagePath() ?? '/uploads/pdf-themes/theme-white.jpg';
+        $anchors = $layoutService->normalize(PdfTheme::TYPE_DELIVERY, $theme?->getAnchors() ?? []);
+
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $absoluteImagePath = $projectDir . '/public' . $imagePath;
+        $backgroundDataUri = $this->toImageDataUri($absoluteImagePath);
+
+        $order = $bonLivraison->getBonCommande();
+        $clientSnapshot = $order?->getClientSnapshot() ?? [];
+
+        $total = 0.0;
+        foreach ($bonLivraison->getBonLivraisonItems() as $item) {
+            $qty = (float) $item->getQuantityDelivered();
+            $price = (float) ($item->getBonCommandeItem()?->getUnitPriceSnapshot() ?? 0);
+            $total += $qty * $price;
+        }
+
+        $facture = $bonLivraison->getFacture();
+        $paidAmount = 0.0;
+        if ($facture !== null) {
+            foreach ($facture->getPaymentFactures() as $pf) {
+                $paidAmount += (float) ($pf->getAmountAllocated() ?? 0);
+            }
+        }
+
+        return $pdfGenerator->renderInline('pdf/delivery_note.html.twig', [
+            'delivery' => $bonLivraison,
+            'order' => $order,
+            'clientSnapshot' => $clientSnapshot,
+            'anchors' => $anchors,
+            'backgroundDataUri' => $backgroundDataUri,
+            'totalHt' => $total,
+            'facture' => $facture,
+            'paidAmount' => $paidAmount,
+        ], $bonLivraison->getReference() . '.pdf');
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
@@ -423,5 +473,21 @@ class BonLivraisonController extends AbstractController
         }
 
         return new JsonResponse(['items' => $items]);
+    }
+
+    private function toImageDataUri(string $absolutePath): string
+    {
+        if (!is_file($absolutePath)) {
+            return '';
+        }
+
+        $content = file_get_contents($absolutePath);
+        if ($content === false) {
+            return '';
+        }
+
+        $mimeType = str_ends_with(strtolower($absolutePath), '.png') ? 'image/png' : 'image/jpeg';
+
+        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($content));
     }
 }

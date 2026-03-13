@@ -223,6 +223,12 @@
               <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
         </a>
 
+        {% if has_privilege('INVOICE_VIEW') %}
+            <a href="{{ path('app_facture_pdf', {'id': facture.id}) }}" target="_blank" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-pdf"></i> {{ 'invoice.pdf_btn'|trans }}
+            </a>
+        {% endif %}
+
         {% if has_privilege('INVOICE_CANCEL') and facture.status != 'CANCELLED' %}
                 <form method="post" action="{{ path('app_facture_cancel', {'id': facture.id}) }}" onsubmit="return confirm('{{ 'invoice.confirm_cancel'|trans }}')">
                 <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ facture.id) }}">

@@ -75,6 +75,7 @@ class AppFixtures extends Fixture
             // Administration
             ['USER_MANAGE', 'Gérer les utilisateurs'],
             ['ROLE_MANAGE', 'Gérer les rôles et privilèges'],
+            ['PDF_THEME_MANAGE', 'Gérer les thèmes PDF et leur positionnement'],
             ['AUDIT_VIEW', 'Consulter le journal d\'audit'],
             
             // System

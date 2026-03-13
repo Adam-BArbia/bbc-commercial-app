@@ -6,9 +6,14 @@ use App\Entity\BonLivraison;
 use App\Entity\DocumentCounter;
 use App\Entity\Facture;
 use App\Entity\FactureItem;
+use App\Entity\PdfTheme;
 use App\Repository\BonLivraisonRepository;
 use App\Repository\DocumentCounterRepository;
 use App\Repository\FactureRepository;
+use App\Repository\PdfThemeRepository;
+use App\Service\FrenchAmountInWordsService;
+use App\Service\PdfGenerator;
+use App\Service\PdfThemeLayoutService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -288,6 +293,33 @@ class FactureController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/pdf', name: 'pdf', methods: ['GET'])]
+    #[IsGranted('INVOICE_VIEW')]
+    public function pdf(
+        Facture $facture,
+        PdfThemeRepository $pdfThemeRepository,
+        PdfThemeLayoutService $layoutService,
+        PdfGenerator $pdfGenerator,
+        FrenchAmountInWordsService $amountInWordsService
+    ): Response {
+        $theme = $pdfThemeRepository->findActiveByType(PdfTheme::TYPE_INVOICE);
+        $imagePath = $theme?->getImagePath() ?? '/uploads/pdf-themes/theme-white.jpg';
+        $anchors = $layoutService->normalize(PdfTheme::TYPE_INVOICE, $theme?->getAnchors() ?? []);
+
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $absoluteImagePath = $projectDir . '/public' . $imagePath;
+        $backgroundDataUri = $this->toImageDataUri($absoluteImagePath);
+
+        $amountInWords = $amountInWordsService->toDinarsAndMillimes((float) $facture->getTotalTtc());
+
+        return $pdfGenerator->renderInline('pdf/invoice.html.twig', [
+            'invoice' => $facture,
+            'anchors' => $anchors,
+            'backgroundDataUri' => $backgroundDataUri,
+            'amountInWords' => $amountInWords,
+        ], $facture->getReference() . '.pdf');
+    }
+
     #[Route('/{id}/cancel', name: 'cancel', methods: ['POST'])]
     #[IsGranted('INVOICE_CANCEL')]
     public function cancel(Request $request, Facture $facture, EntityManagerInterface $entityManager): Response
@@ -424,5 +456,21 @@ class FactureController extends AbstractController
         if ($facture->getDeliverySnapshot() === null || $facture->getDeliverySnapshot() === []) {
             $facture->setDeliverySnapshot($this->buildDeliverySnapshot($deliveries));
         }
+    }
+
+    private function toImageDataUri(string $absolutePath): string
+    {
+        if (!is_file($absolutePath)) {
+            return '';
+        }
+
+        $content = file_get_contents($absolutePath);
+        if ($content === false) {
+            return '';
+        }
+
+        $mimeType = str_ends_with(strtolower($absolutePath), '.png') ? 'image/png' : 'image/jpeg';
+
+        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($content));
     }
 }

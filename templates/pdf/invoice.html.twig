@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4 portrait; margin: 0; }
+        html, body { margin: 0; padding: 0; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: {{ anchors.font_size }}pt; }
+        .page { position: relative; width: 210mm; height: 297mm; }
+        .bg { position: absolute; inset: 0; width: 210mm; height: 297mm; }
+        .layer { position: absolute; left: 0; top: 0; width: 210mm; height: 297mm; }
+        .block { position: absolute; line-height: {{ anchors.line_height }}mm; overflow: hidden; }
+        .boxed-client { border: 0.2mm solid #111; box-sizing: border-box; }
+        .boxed-client-inner { padding: 1.2mm; }
+        .block-table table { height: 100%; table-layout: fixed; }
+        .block-table .filler-row td { height: 100%; }
+        .header-title {
+            font-size: {{ anchors.header_title_font_size|default(14) }}pt;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2mm;
+            line-height: 1.2;
+        }
+        .header-meta { font-size: {{ anchors.font_size - 1 }}pt; }
+        table { width: 100%; border-collapse: collapse; font-size: {{ anchors.font_size - 1 }}pt; }
+        th, td { border: 0.2mm solid #111; padding: 1.2mm; }
+        th { background: #f3f3f3; }
+        .right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        {% if backgroundDataUri %}
+            <img src="{{ backgroundDataUri }}" alt="Theme" class="bg">
+        {% endif %}
+
+        {% set firstDelivery = invoice.bonLivraisons|first %}
+        {% set order = firstDelivery and firstDelivery.bonCommande ? firstDelivery.bonCommande : null %}
+        {% set client = order ? order.client : null %}
+        {% set snapshot = invoice.clientSnapshot %}
+        {% set clientName = snapshot and snapshot.name is defined ? snapshot.name : (order ? order.clientSnapshot.name|default(client ? client.name : '-') : '-') %}
+        {% set clientCode = snapshot and snapshot.client_code is defined ? snapshot.client_code : (order ? order.clientSnapshot.client_code|default(client ? client.clientCode : '-') : '-') %}
+        {% set clientAddress = snapshot and snapshot.address is defined ? snapshot.address : (order ? order.clientSnapshot.address|default(client ? client.address : '-') : '-') %}
+        {% set clientMf = snapshot and snapshot.matricule_fiscale is defined ? snapshot.matricule_fiscale : (order ? order.clientSnapshot.matricule_fiscale|default(client ? client.matriculeFiscale : '-') : '-') %}
+
+        <div class="layer">
+            <div class="block" style="left: {{ anchors.title_x|default(anchors.header_x) }}mm; top: {{ anchors.title_y|default(anchors.header_y) }}mm; width: {{ anchors.title_w|default(anchors.header_w) }}mm; height: {{ anchors.title_h|default(10) }}mm;">
+                <div class="header-title">FACTURE</div>
+            </div>
+
+            <div class="block" style="left: {{ anchors.header_x }}mm; top: {{ anchors.header_y }}mm; width: {{ anchors.header_w }}mm; height: {{ anchors.header_h }}mm;">
+                <table class="header-meta">
+                    <thead>
+                        <tr>
+                            <th>Code document</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ invoice.reference }}</td>
+                            <td>{{ invoice.createdAt|date('d/m/Y') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block boxed-client" style="left: {{ anchors.client_x }}mm; top: {{ anchors.client_y }}mm; width: {{ anchors.client_w }}mm; height: {{ anchors.client_h }}mm;">
+                <div class="boxed-client-inner">
+                    <div><strong>Client:</strong> {{ clientName }}</div>
+                    <div><strong>Code:</strong> {{ clientCode }}</div>
+                    <div><strong>MF:</strong> {{ clientMf }}</div>
+                    <div><strong>Adresse:</strong> {{ clientAddress }}</div>
+                </div>
+            </div>
+
+            <div class="block block-table" style="left: {{ anchors.table_x }}mm; top: {{ anchors.table_y }}mm; width: {{ anchors.table_w }}mm; height: {{ anchors.table_h }}mm;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>BL Reference</th>
+                            <th>Reference</th>
+                            <th>Article</th>
+                            <th class="right">Qte</th>
+                            <th class="right">PU</th>
+                            <th class="right">Total HT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice.factureItems %}
+                            {% set blRefs = [] %}
+                            {% for bl in invoice.bonLivraisons %}
+                                {% for blItem in bl.bonLivraisonItems %}
+                                    {% if item.article and blItem.bonCommandeItem and blItem.bonCommandeItem.article and blItem.bonCommandeItem.article.id == item.article.id %}
+                                        {% if bl.reference not in blRefs %}
+                                            {% set blRefs = blRefs|merge([bl.reference]) %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                            <tr>
+                                <td>{{ blRefs|join(', ')|default('-') }}</td>
+                                <td>{{ item.article.code|default('-') }}</td>
+                                <td>{{ item.article.designation|default('-') }}</td>
+                                <td class="right">{{ item.quantity|number_format(2, '.', ' ') }}</td>
+                                <td class="right">{{ item.unitPrice|number_format(3, '.', ' ') }}</td>
+                                <td class="right">{{ item.totalLineHt|number_format(3, '.', ' ') }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="filler-row">
+                            <td colspan="6"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block" style="left: {{ anchors.totals_x }}mm; top: {{ anchors.totals_y }}mm; width: {{ anchors.totals_w }}mm; height: {{ anchors.totals_h }}mm;">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Sous-total HT</td>
+                            <td class="right">{{ invoice.subtotalHt|number_format(3, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td>Remise</td>
+                            <td class="right">{{ invoice.remise|number_format(3, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td>Total HT</td>
+                            <td class="right">{{ invoice.totalHt|number_format(3, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td>TVA</td>
+                            <td class="right">{{ invoice.tvaAmount|number_format(3, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td>Timbre</td>
+                            <td class="right">{{ invoice.timbre|number_format(3, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total TTC</strong></td>
+                            <td class="right"><strong>{{ invoice.totalTtc|number_format(3, '.', ' ') }} TND</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block" style="left: {{ anchors.footer_x }}mm; top: {{ anchors.footer_y }}mm; width: {{ anchors.footer_w }}mm; height: {{ anchors.footer_h }}mm;">
+                <div><strong>Arretee la presente facture a la somme de :</strong> {{ amountInWords }}</div>
+            </div>
+
+            <div class="block" style="left: {{ anchors.signature_x|default(anchors.footer_x) }}mm; top: {{ anchors.signature_y|default(anchors.footer_y) }}mm; width: {{ anchors.signature_w|default(anchors.footer_w) }}mm; height: {{ anchors.signature_h|default(anchors.footer_h) }}mm;">
+                Signature et cachet
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -157,6 +157,12 @@
                 <i class="bi bi-arrow-left"></i> {{ 'common.back_to_list'|trans }}
             </a>
 
+            {% if has_privilege('DELIVERY_VIEW') %}
+                <a href="{{ path('app_bon_livraison_pdf', {'id': bon_livraison.id}) }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-file-earmark-pdf"></i> {{ 'delivery.pdf_btn'|trans }}
+                </a>
+            {% endif %}
+
             {% if bon_livraison.canBeEdited() %}
                 <a href="{{ path('app_bon_livraison_edit', {'id': bon_livraison.id}) }}" class="btn btn-primary">
                     <i class="bi bi-pencil"></i> {{ 'common.edit'|trans }}

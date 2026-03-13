@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier thème PDF{% endblock %}
+
+{% block body %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-2"><i class="bi bi-pencil"></i> Modifier thème PDF</h1>
+    <p class="text-muted">{{ theme.name }} ({{ theme.documentType == 'DELIVERY' ? 'Bon de Livraison' : (theme.documentType == 'BOTH' ? 'Les deux' : 'Facture') }})</p>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            {% include 'admin/pdf_theme/_form.html.twig' with { form: form, previewImagePath: theme.imagePath } %}
+        </div>
+    </div>
+</div>
+{% endblock %}

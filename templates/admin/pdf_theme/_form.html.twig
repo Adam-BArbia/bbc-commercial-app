@@ -1,0 +1,707 @@
+{{ form_start(form) }}
+    {% set previewSrc = previewImagePath ? asset(previewImagePath) : '' %}
+    <style>
+        .anchor-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            background: #fafafa;
+        }
+
+        .visual-editor {
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .visual-toolbar {
+            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .paper {
+            position: relative;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            aspect-ratio: 210 / 297;
+            background: #eef2f7;
+            user-select: none;
+        }
+
+        .paper-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .paper-placeholder {
+            position: absolute;
+            inset: 0;
+            background-image: repeating-linear-gradient(
+                45deg,
+                #f1f5f9,
+                #f1f5f9 12px,
+                #e2e8f0 12px,
+                #e2e8f0 24px
+            );
+        }
+
+        .snap-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .drag-zone {
+            position: absolute;
+            min-width: 64px;
+            min-height: 28px;
+            border-radius: 0.45rem;
+            border: 1px solid rgba(15, 23, 42, 0.38);
+            background: rgba(255, 255, 255, 0.75);
+            color: #0f172a;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: move;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            padding: 0.25rem 0.4rem;
+        }
+
+        .drag-zone.active {
+            outline: 2px solid #2563eb;
+            outline-offset: 1px;
+        }
+
+        .drag-header { border-left: 4px solid #2563eb; }
+        .drag-title  { border-left: 4px solid #0d9488; }
+        .drag-client { border-left: 4px solid #059669; }
+        .drag-table  { border-left: 4px solid #ea580c; }
+        .drag-totals { border-left: 4px solid #7c3aed; }
+        .drag-footer { border-left: 4px solid #0891b2; }
+        .drag-signature { border-left: 4px solid #ef4444; }
+
+        .zone-label {
+            pointer-events: none;
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 1px;
+            bottom: 1px;
+            width: 11px;
+            height: 11px;
+            border-radius: 2px;
+            background: #0f172a;
+            opacity: 0.75;
+            cursor: nwse-resize;
+        }
+
+        .coords {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .anchor-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .anchor-range {
+            margin-top: 0.25rem;
+        }
+
+        /* ── Dark mode overrides ─────────────────────────────────────── */
+        [data-bs-theme="dark"] .anchor-card {
+            border-color: #334155;
+            background: #1e293b;
+        }
+
+        [data-bs-theme="dark"] .visual-editor {
+            border-color: #334155;
+            background: #0f172a;
+        }
+
+        [data-bs-theme="dark"] .visual-toolbar {
+            border-color: #334155;
+            background: #1e293b;
+            color: #94a3b8;
+        }
+
+        [data-bs-theme="dark"] .paper {
+            background: #0f172a;
+        }
+
+        [data-bs-theme="dark"] .paper-placeholder {
+            background-image: repeating-linear-gradient(
+                45deg,
+                #1e293b,
+                #1e293b 12px,
+                #263043 12px,
+                #263043 24px
+            );
+        }
+
+        /* Keep drag handles light in dark mode for maximum visibility. */
+        [data-bs-theme="dark"] .drag-zone {
+            background: rgba(255, 255, 255, 0.82);
+            color: #0f172a;
+            border-color: rgba(15, 23, 42, 0.38);
+        }
+
+        [data-bs-theme="dark"] .resize-handle {
+            background: #0f172a;
+        }
+
+        [data-bs-theme="dark"] .coords {
+            color: #94a3b8;
+        }
+
+        [data-bs-theme="dark"] .anchor-title {
+            color: #e2e8f0;
+        }
+    </style>
+
+    <div class="row g-3">
+        <div class="col-md-6">{{ form_row(form.name) }}</div>
+        <div class="col-md-3">{{ form_row(form.documentType) }}</div>
+        <div class="col-md-3 d-flex align-items-end">{{ form_row(form.isActive) }}</div>
+        <div class="col-12">{{ form_row(form.imageFile) }}</div>
+    </div>
+
+    <hr>
+    <h6 class="mb-3">Positionnement et dimension des zones (A4 portrait, en millimetres)</h6>
+    <p class="text-muted mb-3">
+        Deplacez chaque bloc avec la souris, redimensionnez via le coin en bas a droite, et activez Snap to grid pour un alignement propre.
+    </p>
+
+    <div class="visual-editor mb-4">
+        <div class="visual-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>Editeur visuel (deplacement + redimensionnement)</span>
+            <div class="snap-controls">
+                <div class="form-check m-0">
+                    <input class="form-check-input" type="checkbox" id="snap-enabled" checked>
+                    <label class="form-check-label" for="snap-enabled">Snap to grid</label>
+                </div>
+                <select class="form-select form-select-sm" id="snap-step" style="width: 100px;">
+                    <option value="0.5">0.5 mm</option>
+                    <option value="1" selected>1 mm</option>
+                    <option value="2">2 mm</option>
+                    <option value="5">5 mm</option>
+                </select>
+            </div>
+            <span class="coords" id="drag-hint">Astuce: zone = deplacer, carre noir = redimensionner.</span>
+        </div>
+
+        <div id="paper" class="paper" data-width-mm="210" data-height-mm="297">
+            {% if previewSrc %}
+                <img id="paper-bg" class="paper-bg" src="{{ previewSrc }}" alt="Apercu theme PDF">
+            {% else %}
+                <div class="paper-placeholder"></div>
+                <img id="paper-bg" class="paper-bg d-none" src="" alt="Apercu theme PDF">
+            {% endif %}
+
+            <div class="drag-zone drag-header" data-zone="header" data-x="{{ form.header_x.vars.id }}" data-y="{{ form.header_y.vars.id }}" data-w="{{ form.header_w.vars.id }}" data-h="{{ form.header_h.vars.id }}">
+                <span class="zone-label">En-tete</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-title" data-zone="title" data-x="{{ form.title_x.vars.id }}" data-y="{{ form.title_y.vars.id }}" data-w="{{ form.title_w.vars.id }}" data-h="{{ form.title_h.vars.id }}">
+                <span class="zone-label">Titre</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-client" data-zone="client" data-x="{{ form.client_x.vars.id }}" data-y="{{ form.client_y.vars.id }}" data-w="{{ form.client_w.vars.id }}" data-h="{{ form.client_h.vars.id }}">
+                <span class="zone-label">Client</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-table" data-zone="table" data-x="{{ form.table_x.vars.id }}" data-y="{{ form.table_y.vars.id }}" data-w="{{ form.table_w.vars.id }}" data-h="{{ form.table_h.vars.id }}">
+                <span class="zone-label">Tableau</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-totals" data-zone="totals" data-x="{{ form.totals_x.vars.id }}" data-y="{{ form.totals_y.vars.id }}" data-w="{{ form.totals_w.vars.id }}" data-h="{{ form.totals_h.vars.id }}">
+                <span class="zone-label">Totaux</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-footer" data-zone="footer" data-x="{{ form.footer_x.vars.id }}" data-y="{{ form.footer_y.vars.id }}" data-w="{{ form.footer_w.vars.id }}" data-h="{{ form.footer_h.vars.id }}">
+                <span class="zone-label">Pied page</span><span class="resize-handle"></span>
+            </div>
+            <div class="drag-zone drag-signature" data-zone="signature" data-x="{{ form.signature_x.vars.id }}" data-y="{{ form.signature_y.vars.id }}" data-w="{{ form.signature_w.vars.id }}" data-h="{{ form.signature_h.vars.id }}">
+                <span class="zone-label">Signature</span><span class="resize-handle"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Bloc en-tete</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.header_x) }}</div>
+                    <div class="col-6">{{ form_row(form.header_y) }}</div>
+                    <div class="col-6">{{ form_row(form.header_w) }}</div>
+                    <div class="col-6">{{ form_row(form.header_h) }}</div>
+                    <div class="col-6">{{ form_row(form.header_title_font_size) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Bloc titre</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.title_x) }}</div>
+                    <div class="col-6">{{ form_row(form.title_y) }}</div>
+                    <div class="col-6">{{ form_row(form.title_w) }}</div>
+                    <div class="col-6">{{ form_row(form.title_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Bloc client</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.client_x) }}</div>
+                    <div class="col-6">{{ form_row(form.client_y) }}</div>
+                    <div class="col-6">{{ form_row(form.client_w) }}</div>
+                    <div class="col-6">{{ form_row(form.client_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Tableau des lignes</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.table_x) }}</div>
+                    <div class="col-6">{{ form_row(form.table_y) }}</div>
+                    <div class="col-6">{{ form_row(form.table_w) }}</div>
+                    <div class="col-6">{{ form_row(form.table_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Bloc totaux</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.totals_x) }}</div>
+                    <div class="col-6">{{ form_row(form.totals_y) }}</div>
+                    <div class="col-6">{{ form_row(form.totals_w) }}</div>
+                    <div class="col-6">{{ form_row(form.totals_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Pied de page</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.footer_x) }}</div>
+                    <div class="col-6">{{ form_row(form.footer_y) }}</div>
+                    <div class="col-6">{{ form_row(form.footer_w) }}</div>
+                    <div class="col-6">{{ form_row(form.footer_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Bloc signature/cachet</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.signature_x) }}</div>
+                    <div class="col-6">{{ form_row(form.signature_y) }}</div>
+                    <div class="col-6">{{ form_row(form.signature_w) }}</div>
+                    <div class="col-6">{{ form_row(form.signature_h) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="anchor-card">
+                <div class="anchor-title">Reglages typographie</div>
+                <div class="row g-2">
+                    <div class="col-6">{{ form_row(form.font_size) }}</div>
+                    <div class="col-6">{{ form_row(form.line_height) }}</div>
+                    <div class="col-12">
+                        <label class="form-label" for="font-size-range">Taille police (curseur)</label>
+                        <input id="font-size-range" class="form-range anchor-range" type="range" min="6" max="16" step="0.1" data-sync="{{ form.font_size.vars.id }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="line-height-range">Hauteur ligne (curseur)</label>
+                        <input id="line-height-range" class="form-range anchor-range" type="range" min="3" max="12" step="0.1" data-sync="{{ form.line_height.vars.id }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Enregistrer
+        </button>
+        <a href="{{ path('admin_pdf_theme_index') }}" class="btn btn-outline-secondary">
+            Annuler
+        </a>
+    </div>
+
+    <script>
+        const paper = document.getElementById('paper');
+        const dragHint = document.getElementById('drag-hint');
+        const bgImage = document.getElementById('paper-bg');
+        const fileInput = document.getElementById('{{ form.imageFile.vars.id }}');
+        const snapEnabledInput = document.getElementById('snap-enabled');
+        const snapStepInput = document.getElementById('snap-step');
+
+        function getPaperMetrics() {
+            return {
+                widthPx: paper.clientWidth,
+                heightPx: paper.clientHeight,
+                widthMm: parseFloat(paper.dataset.widthMm || '210'),
+                heightMm: parseFloat(paper.dataset.heightMm || '297')
+            };
+        }
+
+        function mmToPxX(mm, metrics) {
+            return (mm / metrics.widthMm) * metrics.widthPx;
+        }
+
+        function mmToPxY(mm, metrics) {
+            return (mm / metrics.heightMm) * metrics.heightPx;
+        }
+
+        function pxToMmX(px, metrics) {
+            return (px / metrics.widthPx) * metrics.widthMm;
+        }
+
+        function pxToMmY(px, metrics) {
+            return (px / metrics.heightPx) * metrics.heightMm;
+        }
+
+        function getSnapStep() {
+            if (!snapEnabledInput || !snapEnabledInput.checked) {
+                return 0;
+            }
+
+            return parseFloat(snapStepInput.value || '1');
+        }
+
+        function snapValue(value) {
+            const step = getSnapStep();
+            if (!step || step <= 0) {
+                return value;
+            }
+
+            return Math.round(value / step) * step;
+        }
+
+        function getOtherZonesMm(activeZone) {
+            return Array.from(document.querySelectorAll('.drag-zone'))
+                .filter((z) => z !== activeZone)
+                .map((z) => {
+                    const x = readField(z.dataset.x);
+                    const y = readField(z.dataset.y);
+                    const w = readField(z.dataset.w);
+                    const h = readField(z.dataset.h);
+                    return {
+                        left: x,
+                        right: x + w,
+                        top: y,
+                        bottom: y + h
+                    };
+                });
+        }
+
+        function snapMoveToZones(xMm, yMm, wMm, hMm, activeZone) {
+            if (!snapEnabledInput || !snapEnabledInput.checked) {
+                return { xMm, yMm };
+            }
+
+            const threshold = Math.max(0.8, getSnapStep() || 1);
+            const others = getOtherZonesMm(activeZone);
+
+            const left = xMm;
+            const right = xMm + wMm;
+            const top = yMm;
+            const bottom = yMm + hMm;
+
+            let bestDx = null;
+            let bestDy = null;
+
+            function updateBest(current, candidate) {
+                if (Math.abs(candidate) > threshold) {
+                    return current;
+                }
+                if (current === null || Math.abs(candidate) < Math.abs(current)) {
+                    return candidate;
+                }
+                return current;
+            }
+
+            others.forEach((o) => {
+                bestDx = updateBest(bestDx, o.left - left);
+                bestDx = updateBest(bestDx, o.right - left);
+                bestDx = updateBest(bestDx, o.left - right);
+                bestDx = updateBest(bestDx, o.right - right);
+
+                bestDy = updateBest(bestDy, o.top - top);
+                bestDy = updateBest(bestDy, o.bottom - top);
+                bestDy = updateBest(bestDy, o.top - bottom);
+                bestDy = updateBest(bestDy, o.bottom - bottom);
+            });
+
+            return {
+                xMm: xMm + (bestDx || 0),
+                yMm: yMm + (bestDy || 0)
+            };
+        }
+
+        function snapResizeToZones(xMm, yMm, wMm, hMm, activeZone) {
+            if (!snapEnabledInput || !snapEnabledInput.checked) {
+                return { wMm, hMm };
+            }
+
+            const threshold = Math.max(0.8, getSnapStep() || 1);
+            const others = getOtherZonesMm(activeZone);
+
+            const right = xMm + wMm;
+            const bottom = yMm + hMm;
+
+            let bestDw = null;
+            let bestDh = null;
+
+            function updateBest(current, candidate) {
+                if (Math.abs(candidate) > threshold) {
+                    return current;
+                }
+                if (current === null || Math.abs(candidate) < Math.abs(current)) {
+                    return candidate;
+                }
+                return current;
+            }
+
+            others.forEach((o) => {
+                bestDw = updateBest(bestDw, o.left - right);
+                bestDw = updateBest(bestDw, o.right - right);
+
+                bestDh = updateBest(bestDh, o.top - bottom);
+                bestDh = updateBest(bestDh, o.bottom - bottom);
+            });
+
+            return {
+                wMm: Math.max(5, wMm + (bestDw || 0)),
+                hMm: Math.max(5, hMm + (bestDh || 0))
+            };
+        }
+
+        function readField(id) {
+            const input = document.getElementById(id);
+            if (!input) {
+                return 0;
+            }
+
+            return parseFloat(input.value || '0');
+        }
+
+        function writeField(id, value) {
+            const input = document.getElementById(id);
+            if (!input) {
+                return;
+            }
+
+            const min = parseFloat(input.min || '0');
+            const max = parseFloat(input.max || '999');
+            const normalized = Math.max(min, Math.min(max, value));
+            input.value = normalized.toFixed(2);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function placeZone(zoneElement) {
+            const metrics = getPaperMetrics();
+            const xMm = readField(zoneElement.dataset.x);
+            const yMm = readField(zoneElement.dataset.y);
+            const wMm = readField(zoneElement.dataset.w);
+            const hMm = readField(zoneElement.dataset.h);
+
+            zoneElement.style.left = mmToPxX(xMm, metrics) + 'px';
+            zoneElement.style.top = mmToPxY(yMm, metrics) + 'px';
+            zoneElement.style.width = Math.max(20, mmToPxX(wMm, metrics)) + 'px';
+            zoneElement.style.height = Math.max(20, mmToPxY(hMm, metrics)) + 'px';
+        }
+
+        function refreshAllZones() {
+            document.querySelectorAll('.drag-zone').forEach(placeZone);
+        }
+
+        let interactionState = null;
+
+        document.querySelectorAll('.drag-zone').forEach((zoneElement) => {
+            zoneElement.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+
+                const zoneRect = zoneElement.getBoundingClientRect();
+                const isResize = event.target.classList.contains('resize-handle');
+
+                interactionState = {
+                    zoneElement,
+                    mode: isResize ? 'resize' : 'move',
+                    offsetX: event.clientX - zoneRect.left,
+                    offsetY: event.clientY - zoneRect.top,
+                    startWidth: zoneRect.width,
+                    startHeight: zoneRect.height,
+                    startMouseX: event.clientX,
+                    startMouseY: event.clientY,
+                    startLeft: zoneRect.left,
+                    startTop: zoneRect.top
+                };
+
+                zoneElement.classList.add('active');
+                dragHint.textContent = (isResize ? 'Redimensionnement: ' : 'Deplacement: ') + zoneElement.querySelector('.zone-label').textContent.trim();
+            });
+        });
+
+        window.addEventListener('mousemove', (event) => {
+            if (!interactionState) {
+                return;
+            }
+
+            const metrics = getPaperMetrics();
+            const paperRect = paper.getBoundingClientRect();
+            const zone = interactionState.zoneElement;
+
+            if (interactionState.mode === 'move') {
+                const zoneRect = zone.getBoundingClientRect();
+                const maxX = metrics.widthPx - zoneRect.width;
+                const maxY = metrics.heightPx - zoneRect.height;
+
+                let xPx = event.clientX - paperRect.left - interactionState.offsetX;
+                let yPx = event.clientY - paperRect.top - interactionState.offsetY;
+                xPx = Math.max(0, Math.min(maxX, xPx));
+                yPx = Math.max(0, Math.min(maxY, yPx));
+
+                let xMm = pxToMmX(xPx, metrics);
+                let yMm = pxToMmY(yPx, metrics);
+
+                const snappedToZones = snapMoveToZones(
+                    xMm,
+                    yMm,
+                    readField(zone.dataset.w),
+                    readField(zone.dataset.h),
+                    zone
+                );
+                xMm = snappedToZones.xMm;
+                yMm = snappedToZones.yMm;
+
+                xMm = snapValue(xMm);
+                yMm = snapValue(yMm);
+
+                writeField(zone.dataset.x, xMm);
+                writeField(zone.dataset.y, yMm);
+
+                dragHint.textContent = zone.querySelector('.zone-label').textContent.trim() + ': X ' + xMm.toFixed(1) + ' mm, Y ' + yMm.toFixed(1) + ' mm';
+            } else {
+                const dx = event.clientX - interactionState.startMouseX;
+                const dy = event.clientY - interactionState.startMouseY;
+
+                let nextWidthPx = Math.max(20, interactionState.startWidth + dx);
+                let nextHeightPx = Math.max(20, interactionState.startHeight + dy);
+
+                const currentLeftPx = interactionState.startLeft - paperRect.left;
+                const currentTopPx = interactionState.startTop - paperRect.top;
+
+                nextWidthPx = Math.min(nextWidthPx, metrics.widthPx - Math.max(0, currentLeftPx));
+                nextHeightPx = Math.min(nextHeightPx, metrics.heightPx - Math.max(0, currentTopPx));
+
+                let wMm = pxToMmX(nextWidthPx, metrics);
+                let hMm = pxToMmY(nextHeightPx, metrics);
+
+                const snappedResize = snapResizeToZones(
+                    readField(zone.dataset.x),
+                    readField(zone.dataset.y),
+                    wMm,
+                    hMm,
+                    zone
+                );
+                wMm = snappedResize.wMm;
+                hMm = snappedResize.hMm;
+
+                wMm = snapValue(wMm);
+                hMm = snapValue(hMm);
+
+                writeField(zone.dataset.w, wMm);
+                writeField(zone.dataset.h, hMm);
+
+                dragHint.textContent = zone.querySelector('.zone-label').textContent.trim() + ': W ' + wMm.toFixed(1) + ' mm, H ' + hMm.toFixed(1) + ' mm';
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!interactionState) {
+                return;
+            }
+
+            interactionState.zoneElement.classList.remove('active');
+            interactionState = null;
+            dragHint.textContent = 'Astuce: zone = deplacer, carre noir = redimensionner.';
+        });
+
+        [
+            '{{ form.header_x.vars.id }}', '{{ form.header_y.vars.id }}', '{{ form.header_w.vars.id }}', '{{ form.header_h.vars.id }}',
+            '{{ form.title_x.vars.id }}', '{{ form.title_y.vars.id }}', '{{ form.title_w.vars.id }}', '{{ form.title_h.vars.id }}',
+            '{{ form.client_x.vars.id }}', '{{ form.client_y.vars.id }}', '{{ form.client_w.vars.id }}', '{{ form.client_h.vars.id }}',
+            '{{ form.table_x.vars.id }}', '{{ form.table_y.vars.id }}', '{{ form.table_w.vars.id }}', '{{ form.table_h.vars.id }}',
+            '{{ form.totals_x.vars.id }}', '{{ form.totals_y.vars.id }}', '{{ form.totals_w.vars.id }}', '{{ form.totals_h.vars.id }}',
+            '{{ form.footer_x.vars.id }}', '{{ form.footer_y.vars.id }}', '{{ form.footer_w.vars.id }}', '{{ form.footer_h.vars.id }}',
+            '{{ form.signature_x.vars.id }}', '{{ form.signature_y.vars.id }}', '{{ form.signature_w.vars.id }}', '{{ form.signature_h.vars.id }}'
+        ].forEach((id) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', refreshAllZones);
+            }
+        });
+
+        if (snapEnabledInput) {
+            snapEnabledInput.addEventListener('change', refreshAllZones);
+        }
+
+        if (snapStepInput) {
+            snapStepInput.addEventListener('change', refreshAllZones);
+        }
+
+        window.addEventListener('resize', refreshAllZones);
+
+        if (fileInput && bgImage) {
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+                if (!file) {
+                    return;
+                }
+
+                const objectUrl = URL.createObjectURL(file);
+                bgImage.src = objectUrl;
+                bgImage.classList.remove('d-none');
+            });
+        }
+
+        document.querySelectorAll('input[data-sync]').forEach((rangeInput) => {
+            const target = document.getElementById(rangeInput.dataset.sync);
+            if (!target) {
+                return;
+            }
+
+            rangeInput.value = target.value || target.min || '0';
+            rangeInput.addEventListener('input', () => {
+                target.value = parseFloat(rangeInput.value).toFixed(2);
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+
+            target.addEventListener('input', () => {
+                rangeInput.value = target.value;
+            });
+        });
+
+        refreshAllZones();
+    </script>
+{{ form_end(form) }}

@@ -13,6 +13,7 @@ nav:
     admin: "Administration"
     users: "Users"
     roles: "Roles"
+    pdf_themes: "PDF Themes"
     profile: "My profile"
     change_password: "Change password"
     logout: "Logout"
@@ -204,6 +205,7 @@ delivery:
     confirm_cancel: "Confirm logical cancellation of this delivery note?"
     confirm_delete: "Physical deletion: confirm permanent deletion of this delivery note?"
     delete_admin: "Delete permanently (Admin)"
+    pdf_btn: "PDF"
     created_by: "Created by"
     search_placeholder: "Reference, order or client..."
     col_reference: "Reference"
@@ -265,6 +267,8 @@ invoice:
     col_status: "Status"
     col_actions: "Actions"
     no_invoices: "No invoices found"
+    pdf_btn: "PDF"
+    amount_in_words: "This invoice is stopped at the sum of"
 
 payment:
     title: "Payments"

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { size: A4 portrait; margin: 0; }
+        html, body { margin: 0; padding: 0; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: {{ anchors.font_size }}pt; }
+        .page { position: relative; width: 210mm; height: 297mm; }
+        .bg { position: absolute; inset: 0; width: 210mm; height: 297mm; }
+        .layer { position: absolute; left: 0; top: 0; width: 210mm; height: 297mm; }
+        .block { position: absolute; line-height: {{ anchors.line_height }}mm; overflow: hidden; }
+        .boxed-client { border: 0.2mm solid #111; box-sizing: border-box; }
+        .boxed-client-inner { padding: 1.2mm; }
+        .block-table table { height: 100%; table-layout: fixed; }
+        .block-table .filler-row td { height: 100%; }
+        .header-title {
+            font-size: {{ anchors.header_title_font_size|default(14) }}pt;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2mm;
+            line-height: 1.2;
+        }
+        .header-meta { font-size: {{ anchors.font_size - 1 }}pt; }
+        table { width: 100%; border-collapse: collapse; font-size: {{ anchors.font_size - 1 }}pt; }
+        th, td { border: 0.2mm solid #111; padding: 1.2mm; }
+        th { background: #f3f3f3; }
+        .right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        {% if backgroundDataUri %}
+            <img src="{{ backgroundDataUri }}" alt="Theme" class="bg">
+        {% endif %}
+
+        <div class="layer">
+            <div class="block" style="left: {{ anchors.title_x|default(anchors.header_x) }}mm; top: {{ anchors.title_y|default(anchors.header_y) }}mm; width: {{ anchors.title_w|default(anchors.header_w) }}mm; height: {{ anchors.title_h|default(10) }}mm;">
+                <div class="header-title">BON DE LIVRAISON</div>
+            </div>
+
+            <div class="block" style="left: {{ anchors.header_x }}mm; top: {{ anchors.header_y }}mm; width: {{ anchors.header_w }}mm; height: {{ anchors.header_h }}mm;">
+                <table class="header-meta">
+                    <thead>
+                        <tr>
+                            <th>Code document</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ delivery.reference }}</td>
+                            <td>{{ delivery.createdAt|date('d/m/Y') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block boxed-client" style="left: {{ anchors.client_x }}mm; top: {{ anchors.client_y }}mm; width: {{ anchors.client_w }}mm; height: {{ anchors.client_h }}mm;">
+                <div class="boxed-client-inner">
+                    <div><strong>Client:</strong> {{ clientSnapshot.name|default(order and order.client ? order.client.name : '-') }}</div>
+                    <div><strong>Code:</strong> {{ clientSnapshot.client_code|default(order and order.client ? order.client.clientCode : '-') }}</div>
+                    <div><strong>MF:</strong> {{ clientSnapshot.matricule_fiscale|default(order and order.client ? order.client.matriculeFiscale : '-') }}</div>
+                    <div><strong>Adresse:</strong> {{ clientSnapshot.address|default(order and order.client ? order.client.address : '-') }}</div>
+                </div>
+            </div>
+
+            <div class="block block-table" style="left: {{ anchors.table_x }}mm; top: {{ anchors.table_y }}mm; width: {{ anchors.table_w }}mm; height: {{ anchors.table_h }}mm;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Article</th>
+                            <th class="right">Qte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in delivery.bonLivraisonItems %}
+                            {% set qty = item.quantityDelivered|default(0) %}
+                            <tr>
+                                <td>{{ item.bonCommandeItem.article.code|default('-') }}</td>
+                                <td>{{ item.bonCommandeItem.article.designation|default('-') }}</td>
+                                <td class="right">{{ qty|number_format(2, '.', ' ') }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="filler-row">
+                            <td colspan="3"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block" style="left: {{ anchors.totals_x }}mm; top: {{ anchors.totals_y }}mm; width: {{ anchors.totals_w }}mm; height: {{ anchors.totals_h }}mm;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th class="right">Quantite</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set totalQty = 0 %}
+                        {% for item in delivery.bonLivraisonItems %}
+                            {% set qty = item.quantityDelivered|default(0) %}
+                            {% set totalQty = totalQty + qty %}
+                            <tr>
+                                <td>{{ item.bonCommandeItem.article.code|default('-') }}</td>
+                                <td class="right">{{ qty|number_format(2, '.', ' ') }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td class="right"><strong>{{ totalQty|number_format(2, '.', ' ') }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="block" style="left: {{ anchors.signature_x|default(anchors.footer_x) }}mm; top: {{ anchors.signature_y|default(anchors.footer_y) }}mm; width: {{ anchors.signature_w|default(anchors.footer_w) }}mm; height: {{ anchors.signature_h|default(anchors.footer_h) }}mm;">
+                Signature et cachet
+            </div>
+        </div>
+    </div>
+</body>
+</html>
